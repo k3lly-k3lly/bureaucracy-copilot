@@ -1,16 +1,13 @@
 # Official sources the copilot is allowed to answer from.
-# Your Week 1 task: grow this list to 40-80 entries.
 #
 # Rules:
-#   - Only official or institutional pages (city, federal government, your university).
+#   - Only official or institutional pages (city, federal government, public bodies, universities).
 #   - Open each page and check it really answers questions on that topic before adding it.
 #   - Add the German AND English version of a page when both exist.
 #
-# Good places to start looking:
-#   - service.berlin.de           (Berlin city services, e.g. registering your address)
-#   - make-it-in-germany.com      (federal portal for people moving to Germany)
-#   - bamf.de                     (Federal Office for Migration and Refugees)
-#   - your university's international office pages
+# Starter list: 34 sources, each found on the live web on 2026-11-21.
+# Your task: open each one, delete any that turn out to be unhelpful,
+# and add a few more so you reach at least 40.
 
 topics:
   anmeldung: Registering your address (Anmeldung)
@@ -20,8 +17,148 @@ topics:
   banking: Bank accounts and blocked accounts (Sperrkonto)
 
 sources:
-  # Example entry - replace with real pages you have checked:
-  - url: https://www.make-it-in-germany.com/en/
+  # --- Anmeldung (address registration) ---
+  - url: https://service.berlin.de/dienstleistung/120686/
+    topic: anmeldung
+    language: de
+    note: Berlin service portal - registering your main residence
+  - url: https://willkommenszentrum.berlin.de/en/glossary/landlords-confirmation-residence
+    topic: anmeldung
+    language: en
+    note: Berlin Welcome Centre - landlord's confirmation (Wohnungsgeberbestaetigung)
+  - url: https://www.fu-berlin.de/en/studium/international/degree_seeking/housing/_inhaltselemente/faq_anmeldung/index.html
+    topic: anmeldung
+    language: en
+    note: Freie Universitaet Berlin - Anmeldung steps for international students
+  - url: https://www.international.hu-berlin.de/an_die_hu-en/wegweiser
+    topic: anmeldung
+    language: en
+    note: Humboldt University guide for international students
+
+  # --- Student residence permit ---
+  - url: https://service.berlin.de/dienstleistung/305244/
+    topic: residence_permit
+    language: de
+    note: Berlin service portal - residence permit for studying
+  - url: https://service.berlin.de/dienstleistung/305244/standort/327437/en
     topic: residence_permit
     language: en
-    note: Portal homepage - replace with the specific student visa / residence permit page
+    note: Same service in English, Berlin Immigration Office (LEA)
+  - url: https://www.berlin.de/einwanderung/en/residence/study/
+    topic: residence_permit
+    language: en
+    note: Berlin Immigration Office - studies and work rules for students
+  - url: https://www.berlin.de/einwanderung/aufenthalt/befristet/
+    topic: residence_permit
+    language: de
+    note: Berlin Immigration Office - temporary residence permits overview
+  - url: https://service.berlin.de/dienstleistung/305156/en
+    topic: residence_permit
+    language: en
+    note: Residence permit for study preparation (e.g. Studienkolleg)
+  - url: https://service.berlin.de/dienstleistung/324289/de/
+    topic: residence_permit
+    language: de
+    note: Residence permit for attending a language course
+  - url: https://www.make-it-in-germany.com/en/visa-residence/types/studying
+    topic: residence_permit
+    language: en
+    note: Federal portal - visa for studying
+  - url: https://www.make-it-in-germany.com/en/study-vocational-training/studying-in-germany
+    topic: residence_permit
+    language: en
+    note: Federal portal - studying in Germany, requirements and visa process
+  - url: https://www.daad.de/en/studying-in-germany/living-in-germany/visa/
+    topic: residence_permit
+    language: en
+    note: DAAD - who needs a visa and residence permit
+  - url: https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
+    topic: residence_permit
+    language: en
+    note: EU Immigration Portal - coming to Germany as a student
+  - url: https://www.international.hu-berlin.de/en/studierende/aus-dem-ausland/wegweiser/05/05_01_03
+    topic: residence_permit
+    language: en
+    note: Humboldt University - student residence permit in Berlin
+  - url: https://www.gesetze-im-internet.de/englisch_aufenthg/englisch_aufenthg.html
+    topic: residence_permit
+    language: en
+    note: Residence Act official English translation - Section 16b covers studying
+
+  # --- Health insurance ---
+  - url: https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+    topic: health_insurance
+    language: en
+    note: DAAD - health insurance for international students
+  - url: https://gesund.bund.de/krankenversicherung-studierende
+    topic: health_insurance
+    language: de
+    note: Federal health portal - health insurance for students
+  - url: https://gesund.bund.de/en/krankenversicherung-studierende
+    topic: health_insurance
+    language: en
+    note: Same page in English
+  - url: https://gesund.bund.de/krankenversicherung
+    topic: health_insurance
+    language: de
+    note: Federal health portal - statutory vs private insurance
+  - url: https://www.studierendenwerke.de/themen/studienfinanzierung/kosten-des-studiums/versicherungen/studienvoraussetzung-kranken-und-pflegeversicherung
+    topic: health_insurance
+    language: de
+    note: Deutsches Studierendenwerk - insurance required for enrolment
+  - url: https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
+    topic: health_insurance
+    language: en
+    note: Humboldt University - health insurance for international students
+  - url: https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+    topic: health_insurance
+    language: en
+    note: HTW Berlin - statutory vs private insurance for enrolment
+
+  # --- Renting and deposits ---
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    topic: renting
+    language: de
+    note: Berlin Senate tenant guide - rental contracts and deposits
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/
+    topic: renting
+    language: de
+    note: Berlin Senate tenant guide - overview
+  - url: https://www.berlin.de/sen/sbw/service/mieterschutz/
+    topic: renting
+    language: de
+    note: Berlin Senate - tenant protection and rent brake (Mietpreisbremse)
+  - url: https://www.gesetze-im-internet.de/bgb/__551.html
+    topic: renting
+    language: de
+    note: Civil Code section 551 - deposit limits and instalments
+  - url: https://www.stw.berlin/en/housing/
+    topic: renting
+    language: en
+    note: Studierendenwerk Berlin - student housing
+
+  # --- Banking and blocked accounts ---
+  - url: https://www.auswaertiges-amt.de/en/sperrkonto/388600
+    topic: banking
+    language: en
+    note: Federal Foreign Office - blocked account for students
+  - url: https://www.auswaertiges-amt.de/de/sperrkonto/388600
+    topic: banking
+    language: de
+    note: Same page, German version
+  - url: https://www.make-it-in-germany.com/en/study-vocational-training/studies-in-germany/complete/securing-funding
+    topic: banking
+    language: en
+    note: Federal portal - financing your studies and proof of funds
+  - url: https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+    topic: banking
+    language: de
+    note: Consumer advice centre - right to a basic bank account for new arrivals
+  - url: https://www.bafin.de/DE/Verbraucher/Bank/Produkte/Basiskonto/basiskonto_node.html
+    topic: banking
+    language: de
+    note: BaFin - basic account (Basiskonto) and what to do if refused
+  - url: https://verwaltung.bund.de/leistungsverzeichnis/DE/leistung/99050111013002/herausgeber/LeiKa-101130375/region/000000000000
+    topic: banking
+    language: de
+    note: Federal service directory - complaint when a bank refuses a basic account
