@@ -1,0 +1,27 @@
+# Official sources the copilot is allowed to answer from.
+# Your Week 1 task: grow this list to 40-80 entries.
+#
+# Rules:
+#   - Only official or institutional pages (city, federal government, your university).
+#   - Open each page and check it really answers questions on that topic before adding it.
+#   - Add the German AND English version of a page when both exist.
+#
+# Good places to start looking:
+#   - service.berlin.de           (Berlin city services, e.g. registering your address)
+#   - make-it-in-germany.com      (federal portal for people moving to Germany)
+#   - bamf.de                     (Federal Office for Migration and Refugees)
+#   - your university's international office pages
+
+topics:
+  anmeldung: Registering your address (Anmeldung)
+  residence_permit: Student residence permit
+  health_insurance: Health insurance for students
+  renting: Rental contracts and deposits (Kaution)
+  banking: Bank accounts and blocked accounts (Sperrkonto)
+
+sources:
+  # Example entry - replace with real pages you have checked:
+  - url: https://www.make-it-in-germany.com/en/
+    topic: residence_permit
+    language: en
+    note: Portal homepage - replace with the specific student visa / residence permit page
