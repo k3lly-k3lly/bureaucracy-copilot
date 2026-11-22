@@ -162,3 +162,34 @@ sources:
     topic: banking
     language: de
     note: Federal service directory - complaint when a bank refuses a basic account
+
+  # --- More Anmeldung sources (added Nov 22) ---
+  - url: https://willkommenszentrum.berlin.de/en/housing/registration-residence
+    topic: anmeldung
+    language: en
+    note: Berlin Welcome Centre - registering your residence, deadlines and documents
+  - url: https://www.berlin.de/en/life/new-in-berlin/744279-8206946-moving-to-berlin-registration-offices.en.html
+    topic: anmeldung
+    language: en
+    note: berlin.de - registration offices and the 14-day rule when moving to Berlin
+  - url: https://www.gesetze-im-internet.de/bmg/__17.html
+    topic: anmeldung
+    language: de
+    note: Federal Registration Act section 17 - the legal registration duty
+  - url: https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+    topic: anmeldung
+    language: en
+    note: TU Berlin - registering for exchange students, with checklist
+  - url: https://fu-berlin.de/en/sites/abt-1/referate/1c/welcome-service/neu-in-deutschland/erste-schritte/buergeramt.html
+    topic: anmeldung
+    language: en
+    note: Freie Universitaet Berlin welcome service - Buergeramt and registration
+  # --- More sources (added Nov 22) ---
+  - url: https://www.htw-berlin.de/en/international/pathways-to-htw-berlin/international-degree-seeking-students/visa-/-residence-permit
+    topic: residence_permit
+    language: en
+    note: HTW Berlin - how international students apply for a residence permit
+  - url: https://www.fu-berlin.de/en/studium/international/studium_fu/auslandssemester/erasmus_in/Krankenversicherung.html
+    topic: health_insurance
+    language: en
+    note: Freie Universitaet Berlin - health insurance rules for exchange students
