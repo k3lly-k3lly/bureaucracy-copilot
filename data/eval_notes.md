@@ -14,3 +14,7 @@ Ideas for the Week 4 test set, collected while reviewing sources.
 
 ## Questions the copilot should refuse
 - (add questions here that the sources can't answer, e.g. "Which bank is best?")
+- Residence Act (English, full law): 466 of 718 chunks -> removed, it drowned out everything else
+- make-it-in-germany.com: Radware bot protection returned a challenge page with 200 OK
+  -> removed the 3 pages; downloader now detects challenge pages instead of saving them
+- Broken sentences and ** markers in extracted text -> added normalize_markdown()

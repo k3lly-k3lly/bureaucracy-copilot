@@ -52,22 +52,10 @@ sources:
     topic: residence_permit
     language: de
     note: Berlin Immigration Office - temporary residence permits overview
-  - url: https://service.berlin.de/dienstleistung/305156/en
-    topic: residence_permit
-    language: en
-    note: Residence permit for study preparation (e.g. Studienkolleg)
   - url: https://service.berlin.de/dienstleistung/324289/de/
     topic: residence_permit
     language: de
     note: Residence permit for attending a language course
-  - url: https://www.make-it-in-germany.com/en/visa-residence/types/studying
-    topic: residence_permit
-    language: en
-    note: Federal portal - visa for studying
-  - url: https://www.make-it-in-germany.com/en/study-vocational-training/studying-in-germany
-    topic: residence_permit
-    language: en
-    note: Federal portal - studying in Germany, requirements and visa process
   - url: https://www.daad.de/en/studying-in-germany/living-in-germany/visa/
     topic: residence_permit
     language: en
@@ -80,10 +68,6 @@ sources:
     topic: residence_permit
     language: en
     note: Humboldt University - student residence permit in Berlin
-  - url: https://www.gesetze-im-internet.de/englisch_aufenthg/englisch_aufenthg.html
-    topic: residence_permit
-    language: en
-    note: Residence Act official English translation - Section 16b covers studying
 
   # --- Health insurance ---
   - url: https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
@@ -102,10 +86,6 @@ sources:
     topic: health_insurance
     language: de
     note: Federal health portal - statutory vs private insurance
-  - url: https://www.studierendenwerke.de/themen/studienfinanzierung/kosten-des-studiums/versicherungen/studienvoraussetzung-kranken-und-pflegeversicherung
-    topic: health_insurance
-    language: de
-    note: Deutsches Studierendenwerk - insurance required for enrolment
   - url: https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
     topic: health_insurance
     language: en
@@ -142,14 +122,6 @@ sources:
     topic: banking
     language: en
     note: Federal Foreign Office - blocked account for students
-  - url: https://www.auswaertiges-amt.de/de/sperrkonto/388600
-    topic: banking
-    language: de
-    note: Same page, German version
-  - url: https://www.make-it-in-germany.com/en/study-vocational-training/studies-in-germany/complete/securing-funding
-    topic: banking
-    language: en
-    note: Federal portal - financing your studies and proof of funds
   - url: https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
     topic: banking
     language: de
