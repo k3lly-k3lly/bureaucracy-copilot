@@ -45,7 +45,7 @@ jobs:
           uv run ruff format --check .
 
       - name: Test
-        run: uv run pytest -v
+        run: uv run pytest -v -m "not model"
 
       - name: Docker image builds
         run: docker build -t bureaucracy-copilot .

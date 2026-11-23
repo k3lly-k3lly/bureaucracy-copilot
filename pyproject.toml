@@ -3,7 +3,7 @@ name = "bureaucracy-copilot"
 version = "0.1.0"
 description = "Bilingual assistant that answers questions about German bureaucracy with citations to official sources."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
@@ -12,6 +12,9 @@ dependencies = [
     "pyyaml>=6.0",
     "httpx>=0.28.1",
     "trafilatura>=2.3.1",
+    "fastembed>=0.9.1",
+    "pgvector>=0.5.1",
+    "numpy>=2.5.5",
 ]
 
 [dependency-groups]
@@ -41,4 +44,13 @@ select = ["E", "F", "I", "B", "UP"]
 testpaths = ["tests"]
 markers = [
     "db: tests that need a running Postgres with pgvector (skipped if DATABASE_URL is not set)",
+    "model: tests that download the embedding model (~220 MB, first run only)",
+]
+
+[tool.uv]
+# The project must install on Intel Macs too: newer onnxruntime releases (used by the
+# embedding model) dropped Intel-Mac support, so uv picks a version that still has it.
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
