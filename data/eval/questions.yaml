@@ -166,3 +166,576 @@ questions:
     language: en
     topic: other
     should_refuse: true
+
+  # --- Anmeldung (address registration) ------------------------------------------------------
+  - id: anm-06
+    question: Can I register my address if I am only staying in an Airbnb or hotel for my first month?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+      - https://www.gesetze-im-internet.de/bmg/__17.html
+      - https://www.gesetze-im-internet.de/bmg/__27.html
+    must_include:
+      - 3 months|three months|six months|6 months
+    notes: Tricky - depends on whether the student still has a registered residence in Germany or comes from abroad (BMG 27 exceptions).
+
+  - id: anm-07
+    question: What happens if I miss the 14-day deadline because there are no Bürgeramt appointments available?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - fine|Bußgeld|appointment|Termin
+    notes: Tricky - legally a fine is possible, though Berlin usually waives it if you booked an appointment early.
+
+  - id: anm-08
+    question: My roommate is subletting a room to me without telling the main landlord. Who signs my Wohnungsgeberbestätigung?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/glossary/landlords-confirmation-residence
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - landlord|Vermieter|main tenant|Hauptmieter
+    notes: Tricky - subtenant needs permission from the main landlord or signature from the main tenant acting as Wohnungsgeber.
+
+  - id: anm-09
+    question: Welche Dokumente muss ich zur Anmeldung beim Bürgeramt mitbringen?
+    language: de
+    topic: anmeldung
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/120686/
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+    must_include:
+      - Wohnungsgeberbestätigung|Personalausweis|Reisepass|Anmeldeformular
+
+  - id: anm-10
+    question: Do I get my tax ID automatically after doing the Anmeldung, or do I have to apply for it separately?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+      - https://www.berlin.de/en/life/new-in-berlin/744279-8206946-moving-to-berlin-registration-offices.en.html
+    must_include:
+      - automatic|automatically|post|mail|Steuer-ID|tax identification number
+
+  - id: anm-11
+    question: Can someone else go to the Bürgeramt to register my address for me if I have a lecture?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/120686/
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+    must_include:
+      - power of attorney|Vollmacht|yes|ja
+
+  - id: anm-12
+    question: Do I need to deregister (Abmeldung) when I finish my exchange semester and leave Germany?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://www.fu-berlin.de/en/studium/international/degree_seeking/housing/_inhaltselemente/faq_anmeldung/index.html
+      - https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+    must_include:
+      - yes|ja|Abmeldung|deregister
+
+  - id: anm-13
+    question: Ich ziehe innerhalb von Berlin in eine andere WG um. Muss ich mich wieder neu anmelden?
+    language: de
+    topic: anmeldung
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/120686/
+      - https://www.gesetze-im-internet.de/bmg/__17.html
+    must_include:
+      - ja|14 Tage|zwei Wochen|ummelden
+
+  - id: anm-14
+    question: Is the rental contract (Mietvertrag) enough to register my address if my landlord refuses to fill out the Wohnungsgeberbestätigung?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/glossary/landlords-confirmation-residence
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - no|not enough|nicht|required|Pflicht
+
+  - id: anm-15
+    question: Can I book an Anmeldung appointment at any Bürgeramt in Berlin, or only the one in my district?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/120686/
+      - https://www.berlin.de/en/life/new-in-berlin/744279-8206946-moving-to-berlin-registration-offices.en.html
+    must_include:
+      - any|all|jedes|district|Bezirk
+
+  # --- Renting -----------------------------------------------------------------------------
+  - id: rent-03
+    question: Can my landlord demand the entire security deposit in one lump sum before I even get the keys?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.gesetze-im-internet.de/bgb/__551.html
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - three|3|installments|Teilzahlungen|Ratenzahlung
+
+  - id: rent-04
+    question: What is the difference between Kaltmiete and Warmmiete?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - utilities|heating|Nebenkosten|Betriebskosten
+
+  - id: rent-05
+    question: My landlord says I have to pay a 500 euro broker fee (Provision) to sign the contract. Is that legal?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - Bestellerprinzip|no|nicht|landlord|Vermieter
+    notes: Tricky - legal only if the student explicitly hired the broker themselves; otherwise the landlord pays.
+
+  - id: rent-06
+    question: Wie lange ist die gesetzliche Kündigungsfrist für Mieter bei einem unbefristeten Mietvertrag?
+    language: de
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - drei Monate|3 Monate|drei Monaten
+
+  - id: rent-07
+    question: What is a Schufa credit check and how am I supposed to have one if I just arrived in Germany?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - credit|Bonität|Schufa
+
+  - id: rent-08
+    question: Can I sublet my dorm room or apartment while I go home for the summer break?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - permission|Erlaubnis|landlord|Vermieter|Untervermietung
+
+  - id: rent-09
+    question: How soon after moving out does my landlord have to give back my Kaution?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - months|Monate|Nebenkosten|operating costs
+
+  - id: rent-10
+    question: Muss ich beim Auszug die Wohnung streichen, wenn im Mietvertrag eine Klausel zu Schönheitsreparaturen steht?
+    language: de
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - Schönheitsreparaturen|unwirksam|renoviert|unrenoviert
+    notes: Tricky - depends on whether the apartment was handed over renovated or unrenovated and whether clauses are rigid.
+
+  - id: rent-11
+    question: What is a Mietpreisbremse and does it apply to furnished student rooms in Berlin?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - rent brake|Mietpreisbremse|10%|10 percent
+    notes: Tricky - applies to Berlin, with exceptions for new builds, first-time modernized flats, and certain temporary/dormitory arrangements.
+
+  - id: rent-12
+    question: What is a Wohnungsübergabeprotokoll and why should I fill one out on move-in day?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - handover|defects|Mängel|deposit|Kaution
+
+  # --- Banking -----------------------------------------------------------------------------
+  - id: bank-03
+    question: How much money do I need to put in a blocked account (Sperrkonto) for one year of studying in Germany?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/305244/
+      - https://service.berlin.de/dienstleistung/305244/standort/327437/en
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+    must_include:
+      - 11,904|992|euro|EUR
+
+  - id: bank-04
+    question: Can I withdraw all the money from my blocked account at once after I arrive in Berlin?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+    must_include:
+      - no|monthly|992|limit
+
+  - id: bank-05
+    question: Do I need a regular German current account (Girokonto) in addition to my Sperrkonto?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+      - https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+    must_include:
+      - yes|Girokonto|current account|transfer
+
+  - id: bank-06
+    question: Can a German bank refuse to open a Basiskonto for me because I do not have an Anmeldung yet?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+      - https://www.bafin.de/DE/Verbraucher/Bank/Produkte/Basiskonto/basiskonto_node.html
+    must_include:
+      - no|cannot|nicht|postal address|Postanschrift|legal residence
+
+  - id: bank-07
+    question: Was passiert mit dem Restgeld auf meinem Sperrkonto, wenn ich mein Studium abbreche und Deutschland verlasse?
+    language: de
+    topic: banking
+    expected_urls:
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+    must_include:
+      - Sperrfreigabe|Auslandsvertretung|Ausländerbehörde|Abmeldung
+
+  - id: bank-08
+    question: What is the difference between a Girocard (EC-Karte) and a debit Visa or Mastercard in Germany?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+    must_include:
+      - Girocard|debit|cash|Bargeld
+
+  - id: bank-09
+    question: Are there alternatives to a Sperrkonto to prove financial means for my student visa?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - scholarship|Stipendium|Verpflichtungserklärung|declaration of commitment|income
+
+  - id: bank-10
+    question: Wie lange dauert es, bis eine Bank meinen Antrag auf ein Basiskonto bearbeiten muss?
+    language: de
+    topic: banking
+    expected_urls:
+      - https://www.bafin.de/DE/Verbraucher/Bank/Produkte/Basiskonto/basiskonto_node.html
+      - https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+    must_include:
+      - 10 Geschäftstage|zehn Geschäftstage|10 business days
+
+  # --- Health insurance --------------------------------------------------------------------
+  - id: health-02
+    question: I am from an EU country and have a European Health Insurance Card (EHIC). Do I still need German student health insurance?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+      - https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
+    must_include:
+      - no|EHIC|exemption|Befreiung
+
+  - id: health-03
+    question: What happens to my student health insurance rate once I turn 30 years old?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+    must_include:
+      - 30|ends|higher|voluntary|freiwillig
+
+  - id: health-04
+    question: If I choose private health insurance at the start of my studies, can I switch to public insurance later?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+    must_include:
+      - no|cannot|nicht|entire duration|gesamte Studium
+
+  - id: health-05
+    question: Wie erfährt meine Universität, dass ich krankenversichert bin? Muss ich einen Papierbescheid abgeben?
+    language: de
+    topic: health_insurance
+    expected_urls:
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+      - https://gesund.bund.de/krankenversicherung-studierende
+    must_include:
+      - digital|elektronisch|Krankenkasse|M10
+
+  - id: health-06
+    question: I am doing a preparatory language course (Studienkolleg) before my degree. Can I get the cheap public student rate?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+    must_include:
+      - no|not eligible|private|voluntary|freiwillig
+    notes: Tricky - Studienkolleg and language course students usually cannot join statutory student tariff (KVdS) until matriculated in a degree program.
+
+  - id: health-07
+    question: Can I keep my public student health insurance if I get a working student (Werkstudent) job?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+    must_include:
+      - 20 hours|20 Stunden|yes|ja
+    notes: Tricky - depends on working <= 20 hours/week during lecture periods.
+
+  - id: health-08
+    question: Does travel health insurance from my home country count for university enrolment in Germany?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
+    must_include:
+      - no|not accepted|nicht|visa|enrolment|Immatrikulation
+
+  - id: health-09
+    question: Wann kann ich mich über meine Eltern in der Familienversicherung kostenlos mitversichern lassen?
+    language: de
+    topic: health_insurance
+    expected_urls:
+      - https://gesund.bund.de/krankenversicherung-studierende
+    must_include:
+      - 25|Familienversicherung|Einkommensgrenze|income
+
+  - id: health-10
+    question: What is the electronic student notification procedure (M10) for health insurance?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+    must_include:
+      - M10|digital|electronic|university|Hochschule
+
+  # --- Residence permit --------------------------------------------------------------------
+  - id: res-02
+    question: How many days or hours am I allowed to work on a German student residence permit?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
+      - https://www.htw-berlin.de/en/international/pathways-to-htw-berlin/international-degree-seeking-students/visa-/-residence-permit
+    must_include:
+      - 140|280|full days|half days|20 hours
+
+  - id: res-03
+    question: My national entry visa expires in two weeks, and my LEA appointment isn't for three months. Will I be here illegally?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://service.berlin.de/dienstleistung/305244/
+    must_include:
+      - Fiktionsbescheinigung|fictitious|legal|valid|applied before
+
+  - id: res-04
+    question: Can I enter Germany visa-free as a US or South Korean citizen and apply for my student residence permit in Berlin?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/visa/
+      - https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
+      - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://service.berlin.de/dienstleistung/305244/
+    must_include:
+      - yes|90 days|without a visa|visumfrei
+
+  - id: res-05
+    question: Wie hoch ist die Gebühr für die erstmalige Erteilung einer Aufenthaltserlaubnis zum Studium?
+    language: de
+    topic: residence_permit
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/305244/
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - 100|Euro|EUR
+
+  - id: res-06
+    question: What happens to my student residence permit if I want to switch my major or change universities?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
+      - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://www.htw-berlin.de/en/international/pathways-to-htw-berlin/international-degree-seeking-students/visa-/-residence-permit
+    must_include:
+      - notify|permission|LEA|Ausländerbehörde|change of purpose|Zweckwechsel
+    notes: Tricky - changing subjects within the first 3 semesters is usually fine, but changing degree programs or universities requires informing/approval from LEA.
+
+  - id: res-07
+    question: Can I work as a freelancer or self-employed tutor on a student residence permit?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://www.htw-berlin.de/en/international/pathways-to-htw-berlin/international-degree-seeking-students/visa-/-residence-permit
+    must_include:
+      - permission|approval|Erlaubnis|self-employed|selbstständig
+
+  - id: res-08
+    question: How long can I stay in Germany to look for a job after I graduate from my Master's degree?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - 18 months|18 Monate|one and a half years|1.5 years
+
+  - id: res-09
+    question: Welche Unterlagen brauche ich für die Verlängerung meiner Aufenthaltserlaubnis zum Studium?
+    language: de
+    topic: residence_permit
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/305244/
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - Immatrikulationsbescheinigung|Finanzierungsnachweis|Krankenversicherung|Pass
+
+  - id: res-10
+    question: Do I need to show proof of German language skills if my Master's program in Berlin is taught 100% in English?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/305244/
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - no|nicht|language of instruction|Unterrichtssprache|admission|Zulassung
+
+  # --- Other (broadcasting fee, student status, transport, taxes) ----------------------------
+  - id: other-01
+    question: I got a letter from ARD ZDF Deutschlandradio Beitragsservice asking for money, even though I don't own a TV. Is this a scam?
+    language: en
+    topic: other
+    expected_urls:
+      - https://www.rundfunkbeitrag.de/welcome/englisch/index_ger.html # verify against sources.yaml
+      - https://www.berlin.de/en/life/new-in-berlin/744279-8206946-moving-to-berlin-registration-offices.en.html
+    must_include:
+      - Rundfunkbeitrag|broadcasting fee|18.36|household|Wohnung
+
+  - id: other-02
+    question: I live in a 4-person WG. Do all four of us have to pay the 18.36 euro broadcasting fee separately?
+    language: en
+    topic: other
+    expected_urls:
+      - https://www.rundfunkbeitrag.de/welcome/englisch/index_ger.html # verify against sources.yaml
+    must_include:
+      - no|once|one|per household|pro Wohnung
+
+  - id: other-03
+    question: What is the Semesterticket and how does it work with the Deutschlandticket in Berlin?
+    language: en
+    topic: other
+    expected_urls:
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance # verify against sources.yaml
+    must_include:
+      - Deutschlandticket|public transport|semester fee|Semesterbeitrag
+
+  - id: other-04
+    question: Was ist der Unterschied zwischen Immatrikulation und Rückmeldung an der Universität?
+    language: de
+    topic: other
+    expected_urls:
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+    must_include:
+      - enrolment|Einschreibung|re-registration|Semesterbeitrag
+
+  - id: other-05
+    question: Can I drive in Germany with my foreign driver's license from outside the EU?
+    language: en
+    topic: other
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence # verify against sources.yaml
+    must_include:
+      - 6 months|six months|6 Monate|exchange|Umschreibung
+
+  # --- Should refuse: not covered by any source ------------------------------------------------
+  - id: refuse-04
+    question: Which health insurance company has the best English customer support and dental perks in Berlin?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-05
+    question: Can you write an email in German to a landlord on WG-Gesucht so they pick me for a flat viewing?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-06
+    question: How hard is it to pass the introductory computer science exams at TU Berlin?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-07
+    question: Should I invest my leftover blocked account money in ETFs or crypto while studying in Germany?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-08
+    question: Welche Handy-SIM-Karte hat das beste Datenvolumen für Studenten in Berlin?
+    language: de
+    topic: other
+    should_refuse: true
+
+  - id: refuse-09
+    question: Can you check my motivation letter for my Master's application to HU Berlin and tell me if I will get accepted?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-10
+    question: Where can I buy cheap second-hand furniture near Neukölln this weekend?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-11
+    question: Is it better to study at TU Berlin or RWTH Aachen for mechanical engineering?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-12
+    question: My roommate keeps leaving dirty dishes in the sink. How do I confront them without ruining the WG vibe?
+    language: en
+    topic: other
+    should_refuse: true

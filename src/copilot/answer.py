@@ -22,7 +22,8 @@ GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 # Below this similarity the best passage is too unrelated to answer from (tune in Week 4).
 MIN_SIMILARITY = 0.35
 REFUSAL_MARKER = "NOT_IN_SOURCES"
-MAX_PASSAGE_CHARS = 1200
+# Must be at least the chunker's MAX_CHARS (1500), or the end of a chunk never reaches the model.
+MAX_PASSAGE_CHARS = 1600
 
 SYSTEM_PROMPT = f"""You answer questions from international students about German bureaucracy \
 (address registration, residence permits, health insurance, renting, bank accounts).

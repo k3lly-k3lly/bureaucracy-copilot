@@ -7,8 +7,10 @@ import yaml
 from copilot.answer import Answer, Citation
 from copilot.evaluate import (
     SOURCES_FILE,
+    DailyLimitReached,
     Question,
     call_with_patience,
+    last_run_failures,
     load_questions,
     looks_like_language,
     missing_facts,
@@ -217,3 +219,54 @@ def test_other_errors_are_not_retried():
 
     with pytest.raises(httpx.HTTPStatusError):
         call_with_patience(broken, sleep=lambda s: None)
+
+
+def rate_limited(message: str) -> httpx.HTTPStatusError:
+    request = httpx.Request("POST", "https://api.groq.com")
+    response = httpx.Response(429, request=request, text=message)
+    error = f"Groq returned 429: {message}"
+    return httpx.HTTPStatusError(error, request=request, response=response)
+
+
+def test_daily_limit_is_not_waited_out():
+    # Waiting 60 s can't fix a per-day budget: stop instead of hammering the API.
+    def exhausted() -> Answer:
+        raise rate_limited("Rate limit reached ... on tokens per day (TPD): Limit 200000")
+
+    waits = []
+    with pytest.raises(DailyLimitReached):
+        call_with_patience(exhausted, sleep=waits.append)
+    assert waits == []
+
+
+def test_run_stops_at_daily_limit_and_keeps_finished_results():
+    calls = {"n": 0}
+
+    def llm(messages):
+        calls["n"] += 1
+        if calls["n"] > 1:
+            raise rate_limited("Rate limit reached on tokens per day (TPD)")
+        return "Within 14 days [1]."
+
+    questions = [answerable(id=f"a{i}") for i in range(4)]
+    results = run(questions, lambda q: [passage(URL_A)], llm, pause_seconds=0, sleep=lambda s: None)
+    assert [r.id for r in results] == ["a0"]
+    assert calls["n"] == 2
+
+
+def test_errors_are_left_out_of_the_scores():
+    # Regression: 23 rate-limit errors were counted as wrong answers and refusals.
+    ok = score(answerable(id="a1"), [passage(URL_A)], answered("14 days [1]."))
+    broken = score(answerable(id="a2"), [passage(URL_A)], None)
+    broken.error, broken.passed = "Groq returned 429", False
+    summary = summarize([ok, broken])
+    assert summary["Answer correct (facts + citation + language)"] == "100% (1/1)"
+    assert summary["Errors (not scored)"] == "1"
+
+
+def test_last_run_failures(tmp_path):
+    (tmp_path / "20260101-090000.json").write_text('[{"id": "old", "passed": false}]')
+    (tmp_path / "20260102-090000.json").write_text(
+        '[{"id": "a", "passed": true}, {"id": "b", "passed": false}, {"id": "c", "passed": null}]'
+    )
+    assert last_run_failures(tmp_path) == {"b", "c"}

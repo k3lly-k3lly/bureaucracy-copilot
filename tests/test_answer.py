@@ -190,3 +190,12 @@ def test_groq_llm_raises_on_rate_limit():
     llm = groq_llm("test-key", "test-model", client=client)
     with pytest.raises(httpx.HTTPStatusError):
         llm([{"role": "user", "content": "Hello"}])
+
+
+def test_passages_are_never_cut_shorter_than_a_chunk():
+    # Regression: passages were cut at 1200 chars while chunks go up to 1500,
+    # so facts at the end of a chunk (e.g. "Vollmacht") never reached the model.
+    from copilot.answer import MAX_PASSAGE_CHARS
+    from copilot.ingest.chunk import MAX_CHARS
+
+    assert MAX_PASSAGE_CHARS >= MAX_CHARS

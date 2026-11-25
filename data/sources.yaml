@@ -165,3 +165,12 @@ sources:
     topic: health_insurance
     language: en
     note: Freie Universitaet Berlin - health insurance rules for exchange students
+
+  - url: https://www.gesetze-im-internet.de/bmg/__27.html
+    topic: anmeldung
+    language: de
+    note: Federal Registration Act § 27 - exceptions to the registration duty (e.g. short stays)
+  - url: https://www.rundfunkbeitrag.de/welcome/englisch/index_ger.html
+    topic: renting
+    language: en
+    note: Broadcasting fee (Rundfunkbeitrag) - one fee per flat, in English

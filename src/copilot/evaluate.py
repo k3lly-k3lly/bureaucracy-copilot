@@ -4,6 +4,13 @@
     uv run python -m copilot.evaluate --retrieval-only   # search quality, fast, no Groq calls
     uv run python -m copilot.evaluate                    # full run: search + answers
     uv run python -m copilot.evaluate --ids anm-01 rent-01
+    uv run python -m copilot.evaluate --failed            # re-run only last run's failures
+    uv run python -m copilot.evaluate --model openai/gpt-oss-20b
+
+Groq's free tier allows a limited number of tokens per model per day. A full run of ~75
+questions uses most of that budget, so: re-run failures with --failed, or use --model to
+switch to another model (each model has its own daily budget). When the daily limit is hit,
+the run stops early and only the questions that actually ran are scored.
 
 Each question in data/eval/questions.yaml says:
   - which source(s) should answer it          (expected_urls)
@@ -160,11 +167,13 @@ def percent(part: int, whole: int) -> str:
 
 
 def summarize(results: list[QuestionResult]) -> dict[str, str]:
-    answerable = [r for r in results if not r.should_refuse]
-    refusable = [r for r in results if r.should_refuse]
+    errors = [r for r in results if r.error]
+    scored = [r for r in results if not r.error]  # an API error says nothing about quality
+    answerable = [r for r in scored if not r.should_refuse]
+    refusable = [r for r in scored if r.should_refuse]
     ranks = [r.rank for r in answerable]
     summary = {
-        "Questions": f"{len(results)} ({len(answerable)} answerable, "
+        "Questions": f"{len(scored)} scored ({len(answerable)} answerable, "
         f"{len(refusable)} should refuse)",
         f"Retrieval hit@{TOP_K}": percent(sum(r is not None for r in ranks), len(answerable)),
         "Retrieval MRR": f"{sum(1 / r for r in ranks if r) / len(ranks):.2f}" if ranks else "n/a",
@@ -182,6 +191,8 @@ def summarize(results: list[QuestionResult]) -> dict[str, str]:
             "Contains all key facts": percent(sum(not r.missing for r in answered), len(answered)),
             "Correct refusals": percent(sum(bool(r.passed) for r in refusable), len(refusable)),
         }
+    if errors:
+        summary["Errors (not scored)"] = str(len(errors))
     return summary
 
 
@@ -230,6 +241,15 @@ def render_report(summary: dict[str, str], results: list[QuestionResult], model:
 Search = Callable[[str], list[SearchResult]]
 
 
+class DailyLimitReached(Exception):
+    """Groq's per-day token/request budget is used up: waiting a minute will not help."""
+
+
+def is_daily_limit(exc: httpx.HTTPStatusError) -> bool:
+    text = f"{exc} {exc.response.text}".lower()
+    return "per day" in text or "(tpd)" in text or "(rpd)" in text
+
+
 def call_with_patience(fn: Callable[[], Answer], retries: int = 3, sleep=time.sleep) -> Answer:
     """Free-tier rate limits: on 429, wait (as long as the server asks, max 60 s) and retry."""
     for attempt in range(retries + 1):
@@ -238,6 +258,8 @@ def call_with_patience(fn: Callable[[], Answer], retries: int = 3, sleep=time.sl
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code != 429 or attempt == retries:
                 raise
+            if is_daily_limit(exc):
+                raise DailyLimitReached(str(exc)) from exc
             retry_after = exc.response.headers.get("retry-after", "")
             sleep(min(float(retry_after), 60.0) if retry_after.replace(".", "").isdigit() else 20.0)
     raise AssertionError("unreachable")
@@ -259,6 +281,9 @@ def run(
                 answer = call_with_patience(
                     lambda q=q, passages=passages: answer_question(q.question, passages, llm)
                 )
+            except DailyLimitReached as exc:
+                print(f"\nStopped after {i - 1} of {len(questions)} questions: {exc}")
+                break
             except httpx.HTTPError as exc:
                 error = str(exc)
             if i < len(questions):
@@ -274,11 +299,21 @@ def run(
     return results
 
 
+def last_run_failures(runs_dir: Path = RUNS_DIR) -> set[str]:
+    """Ids that did not pass in the most recent run (errors count as not passed)."""
+    runs = sorted(runs_dir.glob("*.json"))
+    if not runs:
+        raise SystemExit(f"No previous runs in {runs_dir}")
+    return {r["id"] for r in json.loads(runs[-1].read_text()) if r["passed"] is not True}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="copilot.evaluate")
     parser.add_argument("--check", action="store_true", help="only validate the question file")
     parser.add_argument("--retrieval-only", action="store_true", help="skip answers (no Groq)")
     parser.add_argument("--ids", nargs="*", help="only these question ids")
+    parser.add_argument("--failed", action="store_true", help="only last run's failures")
+    parser.add_argument("--model", help="Groq model to use instead of GROQ_MODEL")
     args = parser.parse_args()
 
     questions = load_questions()
@@ -291,6 +326,10 @@ def main() -> None:
         return
     if args.ids:
         questions = [q for q in questions if q.id in set(args.ids)]
+    if args.failed:
+        failed = last_run_failures()
+        questions = [q for q in questions if q.id in failed]
+        print(f"Re-running {len(questions)} questions that failed last time.")
 
     from copilot.answer import groq_llm
     from copilot.config import get_settings
@@ -299,11 +338,12 @@ def main() -> None:
     from copilot.search import hybrid_search
 
     settings = get_settings()
+    model_name = args.model or settings.groq_model
     llm = None
     if not args.retrieval_only:
         if not settings.groq_api_key:
             raise SystemExit("GROQ_API_KEY is not set (or use --retrieval-only)")
-        llm = groq_llm(settings.groq_api_key, settings.groq_model)
+        llm = groq_llm(settings.groq_api_key, model_name)
 
     with connect(settings.database_url) as conn:
 
@@ -313,7 +353,7 @@ def main() -> None:
         results = run(questions, search, llm)
 
     summary = summarize(results)
-    model = "retrieval only" if llm is None else settings.groq_model
+    model = "retrieval only" if llm is None else model_name
     REPORT_FILE.write_text(render_report(summary, results, model), encoding="utf-8")
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     run_file = RUNS_DIR / f"{datetime.now():%Y%m%d-%H%M%S}.json"
@@ -322,6 +362,9 @@ def main() -> None:
     print()
     for name, value in summary.items():
         print(f"  {name:<46} {value}")
+    if len(results) < len(questions):
+        print(f"\n  Only {len(results)} of {len(questions)} questions ran (daily limit).")
+        print("  Try again later, or use --model with another model.")
     print(f"\nReport: {REPORT_FILE}   Details: {run_file}")
 
 
