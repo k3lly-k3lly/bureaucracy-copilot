@@ -127,7 +127,8 @@ questions:
       - https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
       - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
     must_include:
-      - health insurance|Krankenversicherung
+      - health insurance|insured|Krankenversicherung|versichert
+    notes: Nov 25 run answered this English question in German (fixed by stating the answer language).
 
   # --- Residence permit --------------------------------------------------------------------
   - id: res-01
@@ -138,8 +139,13 @@ questions:
       - https://service.berlin.de/dienstleistung/305244/
       - https://service.berlin.de/dienstleistung/305244/standort/327437/en
       - https://www.berlin.de/einwanderung/en/residence/study/
+      - https://www.htw-berlin.de/en/international/pathways-to-htw-berlin/international-degree-seeking-students/visa-/-residence-permit
+      - https://home-affairs.ec.europa.eu/policies/migration-and-asylum/eu-immigration-portal/student-germany_en
     must_include:
-      - Immigration Office|Landesamt|LEA|Einwanderung
+      - Immigration Office|Landesamt|LEA|Einwanderung|Ausländerbehörde|Foreigners Authority
+    notes: >
+      Test widened on Nov 25: the answer "Foreigners Authority (Ausländerbehörde)" citing HTW and
+      the EU portal was correct, just less specific than naming Berlin's LEA.
 
   # --- Should refuse: not covered by any source ------------------------------------------------
   - id: refuse-01

@@ -58,7 +58,8 @@ def test_prompt_numbers_passages_and_includes_question_and_sources():
     user = messages[1]["content"]
     assert "[1] Source: https://example.berlin/page-1 (Section 1)" in user
     assert "[2] Source: https://example.berlin/page-2" in user
-    assert user.endswith("Question: How long do I have?")
+    assert "Question: How long do I have?" in user
+    assert user.endswith("Answer in English.")
 
 
 # --- citations ---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 
 import httpx
 
+from copilot.language import LANGUAGE_NAMES, detect_language
 from copilot.search import SearchResult
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -32,7 +33,8 @@ Rules:
 - Write citations ONLY as a number in square brackets: [1]. No other symbols, words or ranges.
 - If the passages do not contain the answer, reply with exactly: {REFUSAL_MARKER}
 - If passages disagree or the answer depends on the person's situation, say so and cite both.
-- Answer in the same language as the question. Be short: 2 to 5 sentences.
+- Answer in the language named at the end of the user message, even if the passages
+  are in another language. Be short: 2 to 5 sentences.
 - Do not give legal advice beyond what the passages say."""
 
 Llm = Callable[[list[dict]], str]
@@ -63,7 +65,12 @@ def format_passages(results: list[SearchResult]) -> str:
 
 
 def build_messages(question: str, results: list[SearchResult]) -> list[dict]:
-    user = f"Passages:\n\n{format_passages(results)}\n\nQuestion: {question}"
+    # Models drift into the passages' language (German sources -> German answer), so the
+    # language is decided in code and stated last, where the model pays most attention.
+    language = LANGUAGE_NAMES[detect_language(question)]
+    user = (
+        f"Passages:\n\n{format_passages(results)}\n\nQuestion: {question}\n\nAnswer in {language}."
+    )
     return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]
 
 

@@ -32,6 +32,7 @@ import httpx
 import yaml
 
 from copilot.answer import Answer, Llm, answer_question
+from copilot.language import detect_language
 from copilot.search import SearchResult
 
 QUESTIONS_FILE = Path("data/eval/questions.yaml")
@@ -40,11 +41,6 @@ REPORT_FILE = Path("data/eval/report.md")
 RUNS_DIR = Path("data/eval/runs")
 TOP_K = 5
 TOPICS = {"anmeldung", "residence_permit", "health_insurance", "renting", "banking", "other"}
-
-# Tiny word lists for a rough "which language is this answer in?" check.
-GERMAN_WORDS = {"der", "die", "das", "und", "ist", "sie", "nicht", "mit", "ein", "eine", "für"}
-ENGLISH_WORDS = {"the", "and", "is", "you", "your", "to", "of", "a", "for", "must", "can"}
-
 
 # --- the question file -------------------------------------------------------------------
 
@@ -102,7 +98,9 @@ def retrieval_rank(expected_urls: list[str], retrieved_urls: list[str]) -> int |
 
 def missing_facts(text: str, must_include: list[str]) -> list[str]:
     """Facts not found in the answer. Each fact may list alternatives: '14 days|two weeks'."""
-    lowered = text.lower()
+    # Models often put a non-breaking space between number and word ("14\u00a0Tagen"),
+    # which looks identical but is a different character. Normalise all whitespace first.
+    lowered = re.sub(r"\s+", " ", text).lower()
     return [
         fact
         for fact in must_include
@@ -111,9 +109,7 @@ def missing_facts(text: str, must_include: list[str]) -> list[str]:
 
 
 def looks_like_language(text: str, language: str) -> bool:
-    words = set(re.findall(r"[a-zäöüß]+", text.lower()))
-    german, english = len(words & GERMAN_WORDS), len(words & ENGLISH_WORDS)
-    return german >= english if language == "de" else english >= german
+    return detect_language(text) == language
 
 
 @dataclass
