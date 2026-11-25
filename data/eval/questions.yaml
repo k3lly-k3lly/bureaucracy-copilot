@@ -1,0 +1,162 @@
+# Test questions for the evaluation harness (python -m copilot.evaluate).
+#
+# Each question:
+#   id:             short unique id, e.g. anm-05
+#   question:       what a real student would type
+#   language:       en or de (the answer must be in this language)
+#   topic:          anmeldung | residence_permit | health_insurance | renting | banking | other
+#   expected_urls:  sources that contain the answer (any one of them counts). Must be in sources.yaml.
+#   must_include:   key facts the answer must mention. Alternatives with |, e.g. "14 days|two weeks"
+#                   Keep facts short and specific: a number, a document name, a yes/no word.
+#   should_refuse:  true for questions the sources cannot answer (then no urls/facts)
+#   notes:          optional: why this question is interesting
+#
+# How to find expected_urls: uv run python -m copilot.ask "your question" --passages
+# Aim for roughly: 70% answerable, 15% tricky (situation-dependent), 15% should_refuse.
+
+questions:
+  # --- Anmeldung (address registration) ------------------------------------------------------
+  - id: anm-01
+    question: How long do I have to register my address after moving?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+      - https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+      - https://www.berlin.de/en/life/new-in-berlin/744279-8206946-moving-to-berlin-registration-offices.en.html
+      - https://www.gesetze-im-internet.de/bmg/__17.html
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - 14 days|two weeks|2 weeks
+    notes: First real test (Nov 25) - answered correctly with TU Berlin citation.
+
+  - id: anm-02
+    question: Does registering my address cost anything?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - free|no fee|no cost|no charge
+
+  - id: anm-03
+    question: What is the Wohnungsgeberbestätigung and who gives it to me?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://willkommenszentrum.berlin.de/en/glossary/landlords-confirmation-residence
+      - https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+      - https://service.berlin.de/dienstleistung/120686/
+    must_include:
+      - landlord|Vermieter
+
+  - id: anm-04
+    question: Innerhalb welcher Frist muss ich mich nach dem Einzug anmelden?
+    language: de
+    topic: anmeldung
+    expected_urls:
+      - https://www.gesetze-im-internet.de/bmg/__17.html
+      - https://service.berlin.de/dienstleistung/120686/
+      - https://willkommenszentrum.berlin.de/en/housing/registration-residence
+    must_include:
+      - zwei Wochen|14 Tage|14 Tagen
+    notes: German question; the law (BMG 17) says "innerhalb von zwei Wochen".
+
+  - id: anm-05
+    question: I moved to Berlin from abroad. Do I also have only 14 days to register?
+    language: en
+    topic: anmeldung
+    expected_urls:
+      - https://www.auslandsamt.tu-berlin.de/international_office/betreuung_internationaler_austauschstudierender/nach_der_anreise/anmeldung/parameter/en/
+    must_include:
+      - three months|3 months
+    notes: Tricky - sources disagree (14 days vs 3 months from abroad). See eval_notes.md.
+
+  # --- Renting -----------------------------------------------------------------------------
+  - id: rent-01
+    question: How much can my landlord ask for a deposit?
+    language: en
+    topic: renting
+    expected_urls:
+      - https://www.gesetze-im-internet.de/bgb/__551.html
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - three|3
+    notes: First real test (Nov 25) - correct, cited BGB 551.
+
+  - id: rent-02
+    question: Wie hoch darf die Mietkaution sein?
+    language: de
+    topic: renting
+    expected_urls:
+      - https://www.gesetze-im-internet.de/bgb/__551.html
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
+    must_include:
+      - drei|3|dreifache
+
+  # --- Banking -----------------------------------------------------------------------------
+  - id: bank-01
+    question: What is a blocked account (Sperrkonto) and why do students need one?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.auswaertiges-amt.de/en/sperrkonto/388600
+    must_include:
+      - blocked account|Sperrkonto
+
+  - id: bank-02
+    question: Does a bank have to give me a basic account if I just arrived in Germany?
+    language: en
+    topic: banking
+    expected_urls:
+      - https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen/das-recht-auf-ein-basiskonto-fuer-neu-in-deutschland-angekommene-12224
+      - https://www.bafin.de/DE/Verbraucher/Bank/Produkte/Basiskonto/basiskonto_node.html
+    must_include:
+      - basic account|Basiskonto
+
+  # --- Health insurance --------------------------------------------------------------------
+  - id: health-01
+    question: Do I need health insurance to enrol at a German university?
+    language: en
+    topic: health_insurance
+    expected_urls:
+      - https://www.daad.de/en/studying-in-germany/living-in-germany/health-insurance/
+      - https://gesund.bund.de/en/krankenversicherung-studierende
+      - https://gesund.bund.de/krankenversicherung-studierende
+      - https://www.international.hu-berlin.de/en/studierende/welcomecentre/health-insurance
+      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
+    must_include:
+      - health insurance|Krankenversicherung
+
+  # --- Residence permit --------------------------------------------------------------------
+  - id: res-01
+    question: Where do I apply for a residence permit for studying in Berlin?
+    language: en
+    topic: residence_permit
+    expected_urls:
+      - https://service.berlin.de/dienstleistung/305244/
+      - https://service.berlin.de/dienstleistung/305244/standort/327437/en
+      - https://www.berlin.de/einwanderung/en/residence/study/
+    must_include:
+      - Immigration Office|Landesamt|LEA|Einwanderung
+
+  # --- Should refuse: not covered by any source ------------------------------------------------
+  - id: refuse-01
+    question: Which bank has the best student account?
+    language: en
+    topic: other
+    should_refuse: true
+    notes: First real test (Nov 25) - correctly refused.
+
+  - id: refuse-02
+    question: What is the best neighbourhood in Berlin for students to live in?
+    language: en
+    topic: other
+    should_refuse: true
+
+  - id: refuse-03
+    question: Can you recommend a good lawyer for a dispute with my landlord?
+    language: en
+    topic: other
+    should_refuse: true
