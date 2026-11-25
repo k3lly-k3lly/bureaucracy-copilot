@@ -27,6 +27,18 @@ CREATE INDEX IF NOT EXISTS chunks_embedding_idx
     ON chunks USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX IF NOT EXISTS chunks_topic_idx ON chunks (topic);
+
+-- Keyword search: a tsvector is the text split into normalised words ("Anmeldungen" -> "anmeld").
+-- German pages use German word rules, English pages English ones. Postgres keeps it up to date
+-- automatically (GENERATED), and ADD COLUMN IF NOT EXISTS upgrades databases made in Week 2.
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS search_tsv tsvector GENERATED ALWAYS AS (
+    to_tsvector(
+        CASE WHEN language = 'de' THEN 'german'::regconfig ELSE 'english'::regconfig END,
+        title || ' ' || section || ' ' || text
+    )
+) STORED;
+
+CREATE INDEX IF NOT EXISTS chunks_search_tsv_idx ON chunks USING gin (search_tsv);
 """
 
 UPSERT = """

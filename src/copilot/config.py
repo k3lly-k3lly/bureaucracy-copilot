@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     app_name: str = "Bureaucracy Copilot"
     # Example: postgresql://copilot:copilot@localhost:5432/copilot
     database_url: str | None = None
+    # Free key from https://console.groq.com/keys - never commit it; it lives in .env only.
+    groq_api_key: str | None = None
+    # Models come and go; list the current ones with:  uv run python -m copilot.models
+    groq_model: str = "openai/gpt-oss-120b"
 
 
 @lru_cache

@@ -6,6 +6,7 @@ the query vector points the same way as "anmeldung-1", so that chunk must come f
 """
 
 import os
+import uuid
 
 import pytest
 
@@ -22,7 +23,7 @@ from copilot.db import (  # noqa: E402
     init_schema,
     upsert_chunks,
 )
-from copilot.search import search  # noqa: E402
+from copilot.search import hybrid_search, search  # noqa: E402
 
 
 def one_hot(index: int, weight: float = 1.0) -> list[float]:
@@ -48,8 +49,18 @@ def record(id_: str, topic: str, text: str) -> dict:
 
 @pytest.fixture
 def conn():
+    """A connection whose `chunks` table lives in a temporary, private schema.
+
+    A schema is a separate namespace inside the database. The tests create their own
+    (e.g. test_3f9a1c2b), point the connection at it with search_path, and drop it at the end.
+    Your real `chunks` table in the public schema is never touched.
+    """
+    schema = f"test_{uuid.uuid4().hex[:8]}"
     with connect(os.environ["DATABASE_URL"]) as connection:
-        connection.execute("DROP TABLE IF EXISTS chunks")
+        connection.execute(f"CREATE SCHEMA {schema}")
+        # Look for tables in the test schema first; `public` is still needed for the vector type.
+        connection.execute(f"SET search_path TO {schema}, public")
+        connection.commit()
         init_schema(connection)
         upsert_chunks(
             connection,
@@ -64,9 +75,12 @@ def conn():
                 one_hot(1),  # a different direction
             ],
         )
-        yield connection
-        connection.execute("DROP TABLE IF EXISTS chunks")
-        connection.commit()
+        try:
+            yield connection
+        finally:
+            connection.rollback()
+            connection.execute(f"DROP SCHEMA {schema} CASCADE")
+            connection.commit()
 
 
 # --- storing (db.py, already written) ----------------------------------------
@@ -107,9 +121,55 @@ def test_topic_filter(conn):
     assert [r.id for r in results] == ["renting-1"]
 
 
+def test_hybrid_search_boosts_exact_keyword_matches(conn):
+    # The query vector points at "anmeldung-1", but the words match "renting-1".
+    # Hybrid search must rank renting-1 high thanks to the keyword match.
+    results = hybrid_search(conn, "deposit three months rent", one_hot(0), limit=3)
+    ids = [r.id for r in results]
+    assert "renting-1" in ids[:2]
+    assert all(isinstance(r.score, float) and r.score > 0 for r in results)
+
+
+def test_hybrid_search_finds_german_words_from_a_german_question(conn):
+    upsert_chunks(
+        conn,
+        [
+            {
+                **record("renting-de", "renting", "Mietkaution: höchstens drei Monatsmieten."),
+                "language": "de",
+            }
+        ],
+        [one_hot(5)],
+    )
+    results = hybrid_search(conn, "Wie hoch darf die Mietkaution sein?", one_hot(9), limit=1)
+    assert results[0].id == "renting-de"
+
+
+def test_hybrid_search_respects_topic_filter(conn):
+    results = hybrid_search(conn, "deposit", one_hot(0), limit=5, topic="anmeldung")
+    assert {r.topic for r in results} == {"anmeldung"}
+
+
+def test_hybrid_search_is_safe_with_odd_input(conn):
+    assert len(hybrid_search(conn, "x'; DROP TABLE chunks; --", one_hot(0), limit=3)) == 3
+    assert len(hybrid_search(conn, "", one_hot(0), limit=3)) == 3
+    assert count_chunks(conn) == 3  # table untouched
+
+
 def test_results_carry_what_we_need_to_cite(conn):
     best = search(conn, one_hot(0), limit=1)[0]
     assert best.url == "https://example.berlin/anmeldung-1"
     assert best.section == "Section anmeldung-1"
     assert best.text == "Register within 14 days."
     assert best.topic == "anmeldung"
+
+
+def test_tests_use_a_private_schema_not_the_real_table(conn):
+    """Regression test: an earlier version of these tests dropped the real `chunks` table."""
+    schema = conn.execute("SELECT current_schema()").fetchone()[0]
+    assert schema.startswith("test_")
+    table_schema = conn.execute(
+        "SELECT n.nspname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace "
+        "WHERE c.oid = to_regclass('chunks')"
+    ).fetchone()[0]
+    assert table_schema == schema  # `chunks` resolves to the test schema, not public
