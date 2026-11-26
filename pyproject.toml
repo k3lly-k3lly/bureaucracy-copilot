@@ -44,7 +44,7 @@ select = ["E", "F", "I", "B", "UP"]
 testpaths = ["tests"]
 markers = [
     "db: tests that need a running Postgres with pgvector (skipped if DATABASE_URL is not set)",
-    "model: tests that download the embedding model (~220 MB, first run only)",
+    "model: tests that download the embedding model (~640 MB, first run only)",
 ]
 
 [tool.uv]

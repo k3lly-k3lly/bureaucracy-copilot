@@ -89,10 +89,11 @@ def cmd_load(args: argparse.Namespace) -> None:
 
     chunks_path = PROCESSED_DIR / "chunks.jsonl"
     records = [json.loads(line) for line in chunks_path.open(encoding="utf-8")]
-    print(f"Embedding {len(records)} chunks (the model downloads once, ~220 MB)...")
+    print(f"Embedding {len(records)} chunks (the model downloads once, ~640 MB)...")
 
     with connect(database_url) as conn:
-        init_schema(conn)
+        if init_schema(conn):
+            print("The embedding model changed size: rebuilt the chunks table from scratch.")
         for start in range(0, len(records), BATCH_SIZE):
             batch = records[start : start + BATCH_SIZE]
             embeddings = embed_texts([text_for_embedding(r) for r in batch])

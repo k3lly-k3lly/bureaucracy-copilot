@@ -2,8 +2,9 @@
 
 import psycopg
 from pgvector.psycopg import register_vector
+from psycopg import sql
 
-EMBEDDING_DIM = 384  # must match the embedding model (see copilot/embed.py)
+from copilot.embed import EMBEDDING_DIM  # the table's vector size must match the model
 
 SCHEMA = f"""
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -61,9 +62,39 @@ def connect(database_url: str) -> psycopg.Connection:
     return conn
 
 
-def init_schema(conn: psycopg.Connection) -> None:
+def stored_embedding_dim(conn: psycopg.Connection) -> int | None:
+    """Vector size of the existing chunks table, or None if there is no table yet.
+
+    For a vector(n) column Postgres stores n as the column's "type modifier".
+    Only the current schema is checked, never another schema further down the
+    search_path: tests run in their own schema and must not see (or drop!) the real table.
+    """
+    row = conn.execute(
+        "SELECT atttypmod FROM pg_attribute "
+        "WHERE attrelid = to_regclass(quote_ident(current_schema()) || '.chunks') "
+        "AND attname = 'embedding'"
+    ).fetchone()
+    return row[0] if row else None
+
+
+def current_schema(conn: psycopg.Connection) -> str:
+    return conn.execute("SELECT current_schema()").fetchone()[0]
+
+
+def init_schema(conn: psycopg.Connection) -> bool:
+    """Create the table and indexes. Returns True if an old table had to be rebuilt.
+
+    When we switch to an embedding model with a different vector size, the old vectors
+    can't be compared with new ones, so the table is dropped and rebuilt. Nothing is lost:
+    `ingest load` re-creates every row from data/processed/chunks.jsonl.
+    """
+    existing = stored_embedding_dim(conn)
+    rebuilt = existing is not None and existing != EMBEDDING_DIM
+    if rebuilt:
+        conn.execute(sql.SQL("DROP TABLE {}.chunks").format(sql.Identifier(current_schema(conn))))
     conn.execute(SCHEMA)
     conn.commit()
+    return rebuilt
 
 
 def upsert_chunks(conn: psycopg.Connection, records: list[dict], embeddings) -> None:

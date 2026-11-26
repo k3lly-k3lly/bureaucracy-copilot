@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from copilot import main
+from copilot.embed import EMBEDDING_DIM
 from copilot.search import SearchResult
 
 RESULTS = [
@@ -30,7 +31,7 @@ def client(monkeypatch):
 
     monkeypatch.setattr(main, "hybrid_search", fake_hybrid_search)
     main.app.dependency_overrides[main.get_db] = lambda: None
-    main.app.dependency_overrides[main.get_embedder] = lambda: lambda texts: [[0.0] * 384]
+    main.app.dependency_overrides[main.get_embedder] = lambda: lambda texts: [[0.0] * EMBEDDING_DIM]
     main.app.dependency_overrides[main.get_llm] = lambda: lambda messages: "Within 14 days [1]."
     test_client = TestClient(main.app)
     test_client.searches = searches

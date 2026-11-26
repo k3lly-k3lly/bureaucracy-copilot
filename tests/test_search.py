@@ -21,6 +21,7 @@ from copilot.db import (  # noqa: E402
     count_chunks,
     delete_chunks_not_in,
     init_schema,
+    stored_embedding_dim,
     upsert_chunks,
 )
 from copilot.search import hybrid_search, search  # noqa: E402
@@ -173,3 +174,36 @@ def test_tests_use_a_private_schema_not_the_real_table(conn):
         "WHERE c.oid = to_regclass('chunks')"
     ).fetchone()[0]
     assert table_schema == schema  # `chunks` resolves to the test schema, not public
+
+
+def test_table_with_old_vector_size_is_rebuilt(conn):
+    # Switching embedding models changes the vector size; old vectors must not survive.
+    conn.execute("DROP TABLE chunks")
+    conn.execute("CREATE TABLE chunks (id TEXT PRIMARY KEY, embedding vector(3))")
+    conn.commit()
+    assert stored_embedding_dim(conn) == 3
+    assert init_schema(conn) is True
+    assert stored_embedding_dim(conn) == EMBEDDING_DIM
+    assert init_schema(conn) is False  # second run: nothing to rebuild
+
+
+def test_rebuild_never_touches_chunks_in_another_schema(conn):
+    # Like the real `public.chunks` seen from a test schema: further down the search_path.
+    other = f"other_{uuid.uuid4().hex[:8]}"
+    fresh = f"fresh_{uuid.uuid4().hex[:8]}"
+    conn.execute(f"CREATE SCHEMA {other}")
+    conn.execute(f"CREATE TABLE {other}.chunks (id TEXT PRIMARY KEY, embedding vector(3))")
+    conn.execute(f"CREATE SCHEMA {fresh}")
+    conn.execute(f"SET search_path TO {fresh}, {other}, public")
+    conn.commit()
+    try:
+        assert init_schema(conn) is False  # `fresh` had no table: created, nothing dropped
+        dims = conn.execute(
+            "SELECT atttypmod FROM pg_attribute "
+            f"WHERE attrelid = '{other}.chunks'::regclass AND attname = 'embedding'"
+        ).fetchone()
+        assert dims == (3,)  # the other schema's table is untouched
+    finally:
+        conn.execute(f"DROP SCHEMA {fresh} CASCADE")
+        conn.execute(f"DROP SCHEMA {other} CASCADE")
+        conn.commit()

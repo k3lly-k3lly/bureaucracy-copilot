@@ -19,8 +19,12 @@ from copilot.language import LANGUAGE_NAMES, detect_language
 from copilot.search import SearchResult
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-# Below this similarity the best passage is too unrelated to answer from (tune in Week 4).
-MIN_SIMILARITY = 0.35
+# Below this similarity the best passage is too unrelated to answer from. Tuned in Week 4
+# with `python -m copilot.compare_models` for jina-embeddings-v2-base-de: answerable
+# questions scored 0.43 at the lowest (median 0.67), so 0.40 never blocks one of them.
+# Off-topic questions overlap heavily (median 0.48, max 0.70), so this check only catches
+# clearly unrelated questions; refusing the rest is the model's job (NOT_IN_SOURCES).
+MIN_SIMILARITY = 0.40
 REFUSAL_MARKER = "NOT_IN_SOURCES"
 # Must be at least the chunker's MAX_CHARS (1500), or the end of a chunk never reaches the model.
 MAX_PASSAGE_CHARS = 1600

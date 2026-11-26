@@ -6,8 +6,12 @@ even if they share no words, and even if one is English and the other German.
 
 from functools import lru_cache
 
-MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-EMBEDDING_DIM = 384
+# Chosen in Week 4 with `python -m copilot.compare_models`: on our eval questions it put the
+# right page in the top 5 for 92% of questions, in English AND German. The previous model
+# (paraphrase-multilingual-MiniLM-L12-v2, 384 dims) often failed to match an English
+# question to a German page.
+MODEL_NAME = "jinaai/jina-embeddings-v2-base-de"
+EMBEDDING_DIM = 768
 
 
 def text_for_embedding(chunk: dict) -> str:
@@ -23,14 +27,14 @@ def text_for_embedding(chunk: dict) -> str:
 
 @lru_cache(maxsize=1)
 def get_model():
-    """Load the model once and reuse it. The first run downloads it (~220 MB)."""
+    """Load the model once and reuse it. The first run downloads it (~640 MB)."""
     from fastembed import TextEmbedding
 
     return TextEmbedding(MODEL_NAME)
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
-    """One embedding (384 floats) per text, in the same order.
+    """One embedding (EMBEDDING_DIM floats) per text, in the same order.
 
     fastembed returns numpy arrays lazily; .tolist() turns each into a plain list.
     """

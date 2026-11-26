@@ -1,7 +1,7 @@
 """Tests for copilot/embed.py -
 
 The first two tests check text_for_embedding (no model needed).
-The "model" tests download the embedding model once (~220 MB) and check it really
+The "model" tests download the embedding model once (~640 MB) and check it really
 understands meaning, across English and German.
 """
 
