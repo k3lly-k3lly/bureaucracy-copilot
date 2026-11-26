@@ -174,3 +174,35 @@ sources:
     topic: renting
     language: en
     note: Broadcasting fee (Rundfunkbeitrag) - one fee per flat, in English
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/kuendigung/
+    topic: renting
+    language: de
+    note: Berlin rental guide - notice periods (Kündigungsfrist)
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/untervermietung/
+    topic: renting
+    language: de
+    note: Berlin rental guide - subletting needs landlord consent
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/miete/
+    topic: renting
+    language: de
+    note: Berlin rental guide - rent rules, Mietpreisbremse, Nettokaltmiete
+  - url: https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/betriebskosten-heizung-und-warmwasser/
+    topic: renting
+    language: de
+    note: Berlin rental guide - Betriebskosten, heating and hot water
+  - url: https://bmgev.de/mietrecht/tipps/kaution
+    topic: renting
+    language: de
+    note: Berliner MieterGemeinschaft (tenant association) - deposit, incl. when it is returned
+  - url: https://bmgev.de/mietrecht/tipps/schoenheitsreparaturen
+    topic: renting
+    language: de
+    note: Berliner MieterGemeinschaft - painting/renovation clauses at move-out
+  - url: https://bmgev.de/mietrecht/tipps/uebergabeprotokoll
+    topic: renting
+    language: de
+    note: Berliner MieterGemeinschaft - handover protocol
+  - url: https://bmgev.de/mietrecht/tipps/wohnungsbewerbung
+    topic: renting
+    language: de
+    note: Berliner MieterGemeinschaft - flat applications, Schufa

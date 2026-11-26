@@ -290,6 +290,8 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/betriebskosten-heizung-und-warmwasser/
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/miete/
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - utilities|heating|Nebenkosten|Betriebskosten
@@ -309,6 +311,7 @@ questions:
     language: de
     topic: renting
     expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/kuendigung/
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - drei Monate|3 Monate|drei Monaten
@@ -318,6 +321,7 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://bmgev.de/mietrecht/tipps/wohnungsbewerbung
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - credit|Bonität|Schufa
@@ -327,6 +331,7 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/untervermietung/
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - permission|Erlaubnis|landlord|Vermieter|Untervermietung
@@ -336,6 +341,7 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://bmgev.de/mietrecht/tipps/kaution
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - months|Monate|Nebenkosten|operating costs
@@ -345,6 +351,7 @@ questions:
     language: de
     topic: renting
     expected_urls:
+      - https://bmgev.de/mietrecht/tipps/schoenheitsreparaturen
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - Schönheitsreparaturen|unwirksam|renoviert|unrenoviert
@@ -355,6 +362,7 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/miete/
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - rent brake|Mietpreisbremse|10%|10 percent
@@ -365,6 +373,7 @@ questions:
     language: en
     topic: renting
     expected_urls:
+      - https://bmgev.de/mietrecht/tipps/uebergabeprotokoll
       - https://www.berlin.de/sen/wohnen/wissen-fuer-mieter/berliner-mietratgeber/mietvertraege-und-kaution/
     must_include:
       - handover|defects|Mängel|deposit|Kaution
@@ -662,28 +671,22 @@ questions:
     question: What is the Semesterticket and how does it work with the Deutschlandticket in Berlin?
     language: en
     topic: other
-    expected_urls:
-      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance # verify against sources.yaml
-    must_include:
-      - Deutschlandticket|public transport|semester fee|Semesterbeitrag
+    should_refuse: true
+    notes: Outside the five topics (public transport).
 
   - id: other-04
     question: Was ist der Unterschied zwischen Immatrikulation und Rückmeldung an der Universität?
     language: de
     topic: other
-    expected_urls:
-      - https://www.htw-berlin.de/en/studies/study-organisation/re-registration/health-insurance
-    must_include:
-      - enrolment|Einschreibung|re-registration|Semesterbeitrag
+    should_refuse: true
+    notes: Outside the five topics (university administration).
 
   - id: other-05
     question: Can I drive in Germany with my foreign driver's license from outside the EU?
     language: en
     topic: other
-    expected_urls:
-      - https://willkommenszentrum.berlin.de/en/housing/registration-residence # verify against sources.yaml
-    must_include:
-      - 6 months|six months|6 Monate|exchange|Umschreibung
+    should_refuse: true
+    notes: Outside the five topics (driving licences).
 
   # --- Should refuse: not covered by any source ------------------------------------------------
   - id: refuse-04

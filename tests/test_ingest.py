@@ -57,6 +57,16 @@ def test_normalize_keeps_structure():
     )
 
 
+def test_clean_keeps_every_section_of_the_berlin_rental_guide():
+    # Regression: trafilatura's default mode kept only the last of five sections here,
+    # so the deposit rules ("Mietsicherheiten") never reached the database.
+    html = (Path(__file__).parent / "fixtures" / "berlin_mietvertraege.html").read_bytes()
+    text = clean_html(html).markdown
+    assert "Vertragsfreiheit" in text  # section 1
+    assert "Mietsicherheiten" in text  # section 3
+    assert "Abstandszahlung" in text  # section 4
+
+
 def test_clean_returns_none_for_empty_page():
     assert clean_html("<html><body><nav>Menu</nav></body></html>") is None
 

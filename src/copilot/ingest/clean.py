@@ -62,16 +62,27 @@ class CleanPage:
     markdown: str
 
 
+def _extract(html: bytes | str, favor_recall: bool) -> str:
+    return (
+        trafilatura.extract(
+            html,
+            output_format="markdown",
+            include_tables=True,
+            include_links=False,
+            include_comments=False,
+            include_images=False,
+            favor_recall=favor_recall,
+        )
+        or ""
+    )
+
+
 def clean_html(html: bytes | str) -> CleanPage | None:
     """Return the page's main content as Markdown, or None if nothing useful is left."""
-    markdown = trafilatura.extract(
-        html,
-        output_format="markdown",
-        include_tables=True,
-        include_links=False,
-        include_comments=False,
-        include_images=False,
-    )
+    # trafilatura's default mode sometimes throws away most of a page: on the Berlin
+    # rental guide it kept 1 of 5 sections. Its "recall" mode keeps more, but on other
+    # pages it keeps *less*. Neither wins everywhere, so run both and keep the longer one.
+    markdown = max(_extract(html, favor_recall=False), _extract(html, favor_recall=True), key=len)
     # trafilatura falls back to any leftover text (e.g. a lone menu) when a page
     # has no real content, so treat very short results as "nothing useful".
     if not markdown or len(markdown.strip()) < MIN_CONTENT_CHARS:
