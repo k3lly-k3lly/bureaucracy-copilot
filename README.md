@@ -53,12 +53,19 @@ uv run pytest -v              # run tests (DB tests run when DATABASE_URL is set
 uv run uvicorn copilot.main:app --reload
 ```
 
+The chat page lives in [`frontend/`](frontend/README.md) (Next.js + TypeScript). With the API
+running, start it in a second terminal:
+
+```bash
+cd frontend && npm install && npm run dev   # open http://localhost:3000
+```
+
 ## Roadmap
 
 - [x] Week 1 — Foundations: API skeleton, Docker, CI
-- [ ] Week 2 — Ingestion pipeline
-- [ ] Week 3 — Retrieval + cited answers
-- [ ] Week 4 — Evaluation harness
+- [x] Week 2 — Ingestion pipeline
+- [x] Week 3 — Retrieval + cited answers
+- [x] Week 4 — Evaluation harness
 - [ ] Weeks 5–6 — Frontend
 - [ ] Week 7 — Improve with data
 - [ ] Week 8 — Deploy + launch

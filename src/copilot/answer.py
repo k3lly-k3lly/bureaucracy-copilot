@@ -121,34 +121,39 @@ def remove_invalid_citations(text: str, passage_count: int) -> str:
     return re.sub(r"\[(\d+)\]", keep_or_drop, text)
 
 
-def refusal(reason: str) -> Answer:
-    return Answer(
-        text="I couldn't find this in the official sources I have. "
-        "Please check with the responsible office directly.",
-        refused=True,
-        reason=reason,
-    )
+REFUSAL_TEXT = {
+    "en": "I couldn't find this in the official sources I have. "
+    "Please check with the responsible office directly.",
+    "de": "Dazu habe ich in meinen offiziellen Quellen nichts gefunden. "
+    "Bitte frag direkt bei der zuständigen Stelle nach.",
+}
+
+
+def refusal(reason: str, language: str = "en") -> Answer:
+    """An honest "I don't know", in the language of the question."""
+    return Answer(text=REFUSAL_TEXT.get(language, REFUSAL_TEXT["en"]), refused=True, reason=reason)
 
 
 def answer_question(
     question: str, results: list[SearchResult], llm: Llm, debug: bool = False
 ) -> Answer:
+    language = detect_language(question)
     if not results:
-        return refusal("no passages found")
+        return refusal("no passages found", language)
     best = max(r.similarity for r in results)
     if best < MIN_SIMILARITY:
-        return refusal(f"best passage similarity {best:.2f} is below {MIN_SIMILARITY}")
+        return refusal(f"best passage similarity {best:.2f} is below {MIN_SIMILARITY}", language)
 
     raw_reply = llm(build_messages(question, results)).strip()
     if debug:
         print(f"--- raw model reply ---\n{raw_reply}\n-----------------------")
     reply = normalize_citations(raw_reply)
     if REFUSAL_MARKER in reply:
-        return refusal("the model said the passages do not contain the answer")
+        return refusal("the model said the passages do not contain the answer", language)
 
     used = parse_citations(reply, len(results))
     if not used:
-        return refusal("the model's answer cited no passage, so it could not be verified")
+        return refusal("the model's answer cited no passage, so it could not be verified", language)
 
     citations = [
         Citation(n, results[n - 1].url, results[n - 1].section, results[n - 1].text) for n in used

@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from copilot import __version__
@@ -16,6 +17,16 @@ from copilot.search import hybrid_search
 settings = get_settings()
 
 app = FastAPI(title=settings.app_name, version=__version__)
+
+# Browsers block a page from calling an API on a different address unless the API allows it.
+# The chat page runs on localhost:3000 (dev) or github.io (live), the API elsewhere, so list
+# exactly those sites here: any other website still can't use the API from a visitor's browser.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 Topic = Literal["anmeldung", "residence_permit", "health_insurance", "renting", "banking"]
 

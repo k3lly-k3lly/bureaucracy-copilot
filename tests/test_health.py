@@ -21,3 +21,17 @@ def test_database_has_pgvector():
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["pgvector_version"] is not None
+
+
+def test_cors_allows_the_frontend():
+    response = client.options(
+        "/ask",
+        headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"},
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_cors_blocks_other_websites():
+    response = client.get("/health", headers={"Origin": "https://evil.example"})
+    assert "access-control-allow-origin" not in response.headers

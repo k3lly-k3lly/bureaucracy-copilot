@@ -199,3 +199,10 @@ def test_passages_are_never_cut_shorter_than_a_chunk():
     from copilot.ingest.chunk import MAX_CHARS
 
     assert MAX_PASSAGE_CHARS >= MAX_CHARS
+
+
+def test_refusal_is_in_the_language_of_the_question():
+    german = answer_question("Welche Bank ist die beste für Studenten?", [], lambda m: "")
+    english = answer_question("Which bank is best for students?", [], lambda m: "")
+    assert german.refused and german.text.startswith("Dazu habe ich")
+    assert english.refused and english.text.startswith("I couldn't find")

@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     # Models come and go; list the current ones with:  uv run python -m copilot.models
     groq_model: str = "openai/gpt-oss-120b"
+    # Websites allowed to call the API from a browser (CORS): the local dev server and the
+    # GitHub Pages site. Override with CORS_ORIGINS='["https://..."]' in .env if they change.
+    cors_origins: list[str] = ["http://localhost:3000", "https://k3lly-k3lly.github.io"]
 
 
 @lru_cache
