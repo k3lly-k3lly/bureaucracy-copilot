@@ -6,17 +6,23 @@ import yaml
 
 from copilot.answer import Answer, Citation
 from copilot.evaluate import (
+    CI_METRICS,
     SOURCES_FILE,
+    Check,
     DailyLimitReached,
     Question,
     call_with_patience,
+    check_minimums,
     last_run_failures,
+    load_ci_config,
     load_questions,
     looks_like_language,
     missing_facts,
+    rates,
     render_report,
     retrieval_rank,
     run,
+    run_ci,
     score,
     summarize,
     validate_questions,
@@ -270,3 +276,96 @@ def test_last_run_failures(tmp_path):
         '[{"id": "a", "passed": true}, {"id": "b", "passed": false}, {"id": "c", "passed": null}]'
     )
     assert last_run_failures(tmp_path) == {"b", "c"}
+
+
+# --- the CI check --------------------------------------------------------------------------
+
+
+def test_real_ci_file_is_valid():
+    config = load_ci_config(load_questions())
+    assert len(config["answer_questions"]) == 20
+    assert set(config["minimums"]) <= set(CI_METRICS)
+
+
+def test_ci_file_with_unknown_question_id_is_rejected(tmp_path):
+    path = tmp_path / "ci.yaml"
+    path.write_text("answer_questions: [a1, typo-99]\nminimums: {answered: 0.8}\n")
+    with pytest.raises(SystemExit, match="typo-99"):
+        load_ci_config([answerable(id="a1")], path)
+
+
+def test_rates_are_fractions():
+    good = score(answerable(id="a1"), [passage(URL_A)], answered("14 days [1]."))
+    refused = score(answerable(id="a2"), [passage(URL_A)], REFUSED)
+    out = rates([good, refused])
+    assert out == {
+        "retrieval_hit": 1.0,
+        "answered": 0.5,
+        "answer_correct": 0.5,
+        "correct_refusals": None,  # no refusal questions in this run
+    }
+
+
+def test_minimum_check_handles_rounding_and_missing_values():
+    assert Check("answered", 12 / 15, 0.80).ok  # exactly on the line passes
+    assert not Check("answered", 11 / 15, 0.80).ok
+    assert not Check("correct_refusals", None, 0.80).ok
+    # A metric that was not measured (e.g. answers skipped) is not checked at all.
+    assert [
+        c.metric
+        for c in check_minimums({"retrieval_hit": 0.9}, {"retrieval_hit": 0.8, "answered": 0.8})
+    ] == ["retrieval_hit"]
+
+
+CI_QUESTIONS = [
+    answerable(id="a1"),
+    Question(id="r1", question="Best bank?", language="en", topic="other", should_refuse=True),
+]
+CI_CONFIG = {
+    "answer_questions": ["a1", "r1"],
+    "minimums": {m: 1.0 for m in CI_METRICS},
+}
+
+
+def ci_search(question: str):
+    # Nothing is found for the off-topic question, so the copilot refuses it.
+    return [] if "bank" in question else [passage(URL_A)]
+
+
+def no_sleep(seconds: float) -> None:
+    pass
+
+
+def test_ci_passes_when_every_score_meets_its_minimum(monkeypatch, tmp_path):
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    llm = lambda messages: "Within 14 days [1]."  # noqa: E731
+    assert run_ci(CI_QUESTIONS, ci_search, llm, CI_CONFIG, "fake", sleep=no_sleep)
+    assert "| answer_correct | 100% | 100% | pass |" in summary.read_text()
+
+
+def test_ci_fails_when_answers_get_worse(monkeypatch, capsys):
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    llm = lambda messages: "You must register soon [1]."  # noqa: E731  (key fact missing)
+    assert not run_ci(CI_QUESTIONS, ci_search, llm, CI_CONFIG, "fake", sleep=no_sleep)
+    out = capsys.readouterr().out
+    assert "| answer_correct | 0% | 100% | **FAIL** |" in out
+    assert "missing facts" in out
+
+
+def test_ci_skips_answers_but_still_checks_retrieval_at_daily_limit(monkeypatch, capsys):
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+
+    def exhausted(messages):
+        raise rate_limited("Rate limit reached on tokens per day (TPD)")
+
+    assert run_ci(CI_QUESTIONS, ci_search, exhausted, CI_CONFIG, "fake", sleep=no_sleep)
+    out = capsys.readouterr().out
+    assert "daily limit" in out
+    assert "answer_correct" not in out
+
+
+def test_ci_without_key_still_fails_on_bad_retrieval(monkeypatch):
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    wrong_page = lambda q: [passage(URL_B)]  # noqa: E731
+    assert not run_ci(CI_QUESTIONS, wrong_page, None, CI_CONFIG, "fake", sleep=no_sleep)

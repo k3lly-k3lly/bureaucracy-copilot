@@ -1,0 +1,84 @@
+name: Eval
+
+# Checks answer quality: retrieval on all test questions, answers on the 20 in
+# data/eval/ci.yaml. Fails if any score drops below its minimum there.
+# Runs only when something that affects answers changes, to save Groq's free daily tokens.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "data/sources.yaml"
+      - "data/processed/chunks.jsonl"
+      - "data/eval/questions.yaml"
+      - "data/eval/ci.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/eval.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "data/sources.yaml"
+      - "data/processed/chunks.jsonl"
+      - "data/eval/questions.yaml"
+      - "data/eval/ci.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/eval.yml"
+  workflow_dispatch: # adds a "Run workflow" button on the Actions tab
+
+# If you push twice quickly, cancel the older run instead of spending tokens on both.
+concurrency:
+  group: eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: copilot
+          POSTGRES_PASSWORD: copilot
+          POSTGRES_DB: copilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U copilot -d copilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://copilot:copilot@localhost:5432/copilot
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      # Keep the embedding model (~640 MB) in a folder we can cache between runs.
+      FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.fastembed_cache
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Cache the embedding model
+        uses: actions/cache@v4
+        with:
+          path: .fastembed_cache
+          key: fastembed-${{ hashFiles('src/copilot/embed.py') }}
+
+      - name: Enable pgvector
+        run: psql "$DATABASE_URL" -f db/init.sql
+
+      # Uses the committed data/processed/chunks.jsonl, so CI never downloads the
+      # source websites (some block automated traffic, and pages change over time).
+      - name: Load the documents into the database
+        run: uv run python -m copilot.ingest load
+
+      - name: Eval check
+        run: uv run python -m copilot.evaluate --ci

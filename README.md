@@ -78,3 +78,8 @@ Measured with `uv run python -m copilot.evaluate` on 74 test questions
 source and uses the question's language. The first two runs had 12 refusal
 questions instead of 15. LLM answers vary between runs, so differences of a
 few points are within noise.
+
+Every push that changes the copilot also runs `uv run python -m copilot.evaluate --ci` in
+GitHub Actions ([eval.yml](.github/workflows/eval.yml)): retrieval on all 74 questions, answers
+on a fixed set of 20 ([ci.yaml](data/eval/ci.yaml)). The build fails if any score drops below
+its minimum, so a change that makes answers worse can't slip through unnoticed.

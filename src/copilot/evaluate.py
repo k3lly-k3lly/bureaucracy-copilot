@@ -6,6 +6,7 @@
     uv run python -m copilot.evaluate --ids anm-01 rent-01
     uv run python -m copilot.evaluate --failed            # re-run only last run's failures
     uv run python -m copilot.evaluate --model openai/gpt-oss-20b
+    uv run python -m copilot.evaluate --ci                # the check GitHub runs on every push
 
 Groq's free tier allows a limited number of tokens per model per day. A full run of ~75
 questions uses most of that budget, so: re-run failures with --failed, or use --model to
@@ -24,10 +25,15 @@ The evaluator scores three things:
   3. Refusals:  does it refuse unanswerable questions, and NOT refuse answerable ones?
 
 Results go to data/eval/report.md (commit this) and data/eval/runs/<time>.json (raw details).
+
+--ci runs the check from data/eval/ci.yaml: retrieval on all questions, answers on a small
+fixed subset, and exits with an error if any score is below its minimum, so a change that
+makes the copilot worse turns the GitHub build red.
 """
 
 import argparse
 import json
+import os
 import re
 import time
 from collections.abc import Callable
@@ -46,6 +52,7 @@ QUESTIONS_FILE = Path("data/eval/questions.yaml")
 SOURCES_FILE = Path("data/sources.yaml")
 REPORT_FILE = Path("data/eval/report.md")
 RUNS_DIR = Path("data/eval/runs")
+CI_FILE = Path("data/eval/ci.yaml")
 TOP_K = 5
 TOPICS = {"anmeldung", "residence_permit", "health_insurance", "renting", "banking", "other"}
 
@@ -196,6 +203,28 @@ def summarize(results: list[QuestionResult]) -> dict[str, str]:
     return summary
 
 
+def rates(results: list[QuestionResult]) -> dict[str, float | None]:
+    """The headline scores as fractions (0.0-1.0), for comparing against minimums.
+
+    None means "nothing to measure" (e.g. no refusal questions in the run).
+    """
+    scored = [r for r in results if not r.error]
+    answerable = [r for r in scored if not r.should_refuse]
+    refusable = [r for r in scored if r.should_refuse]
+
+    def ratio(part: int, whole: int) -> float | None:
+        return part / whole if whole else None
+
+    out = {"retrieval_hit": ratio(sum(r.rank is not None for r in answerable), len(answerable))}
+    if any(r.answered is not None for r in scored):
+        out |= {
+            "answered": ratio(sum(bool(r.answered) for r in answerable), len(answerable)),
+            "answer_correct": ratio(sum(bool(r.passed) for r in answerable), len(answerable)),
+            "correct_refusals": ratio(sum(bool(r.passed) for r in refusable), len(refusable)),
+        }
+    return out
+
+
 def render_report(summary: dict[str, str], results: list[QuestionResult], model: str) -> str:
     lines = [
         "# Evaluation report",
@@ -299,6 +328,101 @@ def run(
     return results
 
 
+# --- the CI check ------------------------------------------------------------------------
+
+CI_METRICS = ("retrieval_hit", "answered", "answer_correct", "correct_refusals")
+
+
+@dataclass
+class Check:
+    metric: str
+    value: float | None
+    minimum: float
+
+    @property
+    def ok(self) -> bool:
+        # The tiny tolerance stops 12/15 from "failing" a 0.80 minimum through float rounding.
+        return self.value is not None and self.value >= self.minimum - 1e-9
+
+
+def load_ci_config(questions: list[Question], path: Path = CI_FILE) -> dict:
+    """Read ci.yaml and make sure it only names questions and metrics that exist."""
+    config = yaml.safe_load(path.read_text(encoding="utf-8"))
+    known = {q.id for q in questions}
+    unknown_ids = [i for i in config["answer_questions"] if i not in known]
+    unknown_metrics = [m for m in config["minimums"] if m not in CI_METRICS]
+    if unknown_ids or unknown_metrics:
+        raise SystemExit(
+            f"Problems in {path}: unknown question ids {unknown_ids}, "
+            f"unknown metrics {unknown_metrics} (allowed: {', '.join(CI_METRICS)})"
+        )
+    return config
+
+
+def check_minimums(measured: dict[str, float | None], minimums: dict[str, float]) -> list[Check]:
+    """One Check per minimum whose metric was measured in this run."""
+    return [Check(m, measured[m], minimum) for m, minimum in minimums.items() if m in measured]
+
+
+def render_checks(checks: list[Check]) -> str:
+    def fmt(value: float | None) -> str:
+        return "n/a" if value is None else f"{100 * value:.0f}%"
+
+    lines = ["| Check | Score | Minimum | Result |", "| --- | --- | --- | --- |"]
+    for c in checks:
+        result = "pass" if c.ok else "**FAIL**"
+        lines.append(f"| {c.metric} | {fmt(c.value)} | {fmt(c.minimum)} | {result} |")
+    return "\n".join(lines) + "\n"
+
+
+def run_ci(
+    questions: list[Question],
+    search: Search,
+    llm: Llm | None,
+    config: dict,
+    model: str,
+    sleep=time.sleep,
+) -> bool:
+    """Run the CI check. Returns True if every measured score meets its minimum."""
+    print(f"Step 1/2: retrieval on all {len(questions)} questions (no Groq calls)")
+    measured = {"retrieval_hit": rates(run(questions, search, None))["retrieval_hit"]}
+    report = ""
+
+    wanted = set(config["answer_questions"])
+    subset = [q for q in questions if q.id in wanted]
+    if llm is None:
+        print("\n::warning::GROQ_API_KEY is not set, so answers were not checked.")
+    else:
+        print(f"\nStep 2/2: answers on {len(subset)} questions from {CI_FILE} ({model})")
+        answers = run(subset, search, llm, sleep=sleep)
+        if len(answers) < len(subset):
+            # Hitting the free daily limit says nothing about quality: warn, don't fail.
+            print("\n::warning::Groq's daily limit was reached, so answers were not checked.")
+        else:
+            if any(r.error for r in answers):
+                print("\n::warning::Some questions hit API errors and were not scored.")
+            r = rates(answers)
+            measured |= {m: r[m] for m in ("answered", "answer_correct", "correct_refusals")}
+            report = render_report(summarize(answers), answers, model).split("## Failures", 1)[1]
+
+    checks = check_minimums(measured, config["minimums"])
+    table = render_checks(checks)
+    print("\n" + table)
+    if report:
+        print("Answer failures:" + report)
+
+    summary_file = os.environ.get("GITHUB_STEP_SUMMARY")  # shown on the GitHub run page
+    if summary_file:
+        with open(summary_file, "a", encoding="utf-8") as f:
+            f.write("## Eval check\n\n" + table)
+            if report:
+                f.write("\n### Answer failures\n" + report)
+
+    ok = all(c.ok for c in checks)
+    print("All scores meet their minimums." if ok else "Some scores are below their minimum.")
+    return ok
+
+
 def last_run_failures(runs_dir: Path = RUNS_DIR) -> set[str]:
     """Ids that did not pass in the most recent run (errors count as not passed)."""
     runs = sorted(runs_dir.glob("*.json"))
@@ -314,6 +438,7 @@ def main() -> None:
     parser.add_argument("--ids", nargs="*", help="only these question ids")
     parser.add_argument("--failed", action="store_true", help="only last run's failures")
     parser.add_argument("--model", help="Groq model to use instead of GROQ_MODEL")
+    parser.add_argument("--ci", action="store_true", help=f"run the check in {CI_FILE}")
     args = parser.parse_args()
 
     questions = load_questions()
@@ -322,7 +447,9 @@ def main() -> None:
     if problems:
         raise SystemExit("Problems in questions.yaml:\n  " + "\n  ".join(problems))
     print(f"questions.yaml is valid: {len(questions)} questions.")
+    ci_config = load_ci_config(questions)  # also checked by --check, so typos show up early
     if args.check:
+        print(f"{CI_FILE} is valid: {len(ci_config['answer_questions'])} answer questions.")
         return
     if args.ids:
         questions = [q for q in questions if q.id in set(args.ids)]
@@ -340,7 +467,10 @@ def main() -> None:
     settings = get_settings()
     model_name = args.model or settings.groq_model
     llm = None
-    if not args.retrieval_only:
+    if args.ci:
+        if settings.groq_api_key:
+            llm = groq_llm(settings.groq_api_key, model_name)
+    elif not args.retrieval_only:
         if not settings.groq_api_key:
             raise SystemExit("GROQ_API_KEY is not set (or use --retrieval-only)")
         llm = groq_llm(settings.groq_api_key, model_name)
@@ -350,6 +480,8 @@ def main() -> None:
         def search(question: str) -> list[SearchResult]:
             return hybrid_search(conn, question, embed_texts([question])[0], limit=TOP_K)
 
+        if args.ci:
+            raise SystemExit(0 if run_ci(questions, search, llm, ci_config, model_name) else 1)
         results = run(questions, search, llm)
 
     summary = summarize(results)

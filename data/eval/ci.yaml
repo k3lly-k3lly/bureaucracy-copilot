@@ -1,0 +1,48 @@
+# The CI eval: what GitHub checks on every push that changes the copilot.
+#
+#   uv run python -m copilot.evaluate --ci
+#
+# 1. Retrieval is checked on ALL questions in questions.yaml (free: no Groq calls).
+# 2. Answers are checked on the questions below only, to stay inside Groq's free daily
+#    token limit (~2,000 tokens per question, 200,000 per day).
+#
+# The questions were picked from the Nov 27 run (all passed then): 3 per topic, a mix of
+# English and German, plus 5 that must be refused. They form a regression set: if a change
+# breaks something that used to work, these scores drop and the build turns red.
+#
+# The minimums leave room for normal run-to-run variation: LLM answers differ slightly each
+# time, so a single flaky question must not fail the build.
+
+answer_questions:
+  # Anmeldung
+  - anm-01
+  - anm-04 # de
+  - anm-07
+  # Renting
+  - rent-02 # de
+  - rent-04
+  - rent-06 # de
+  # Banking
+  - bank-01
+  - bank-04
+  - bank-10 # de
+  # Health insurance
+  - health-03
+  - health-05 # de
+  - health-07
+  # Residence permit
+  - res-01
+  - res-05 # de
+  - res-06
+  # Must be refused
+  - refuse-01
+  - refuse-05
+  - refuse-08 # de
+  - other-03
+  - other-04 # de
+
+minimums:
+  retrieval_hit: 0.80 # all questions; was 88% on Nov 27
+  answered: 0.80 # 12 of the 15 answerable questions
+  answer_correct: 0.70 # 11 of 15
+  correct_refusals: 0.80 # 4 of 5
