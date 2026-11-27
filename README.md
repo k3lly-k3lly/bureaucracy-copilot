@@ -62,3 +62,19 @@ uv run uvicorn copilot.main:app --reload
 - [ ] Weeks 5–6 — Frontend
 - [ ] Week 7 — Improve with data
 - [ ] Week 8 — Deploy + launch
+
+## Evaluation results
+
+Measured with `uv run python -m copilot.evaluate` on 74 test questions
+(59 answerable, 15 that should be refused). Each row adds one round of changes.
+
+| Change | Retrieval hit@5 | Answered (not refused) | Answer correct | Cites expected source | All key facts | Correct refusals |
+|---|---|---|---|---|---|---|
+| Baseline (Nov 25) | 82% | — | 50% | 88% | 90% | 100% |
+| Fix passage truncation (Nov 26) | 82% | 61% | 55% | 97% | 92% | 100% |
+| Renting sources, page-extraction fix, Jina embeddings, refusal cut-off 0.40 (Nov 27) | 88% | **80%** | **63%** | 85% | **94%** | **100%** |
+
+"Answer correct" means the answer contains every key fact, cites an expected
+source and uses the question's language. The first two runs had 12 refusal
+questions instead of 15. LLM answers vary between runs, so differences of a
+few points are within noise.
