@@ -426,7 +426,7 @@ questions:
     expected_urls:
       - https://www.auswaertiges-amt.de/en/sperrkonto/388600
     must_include:
-      - Sperrfreigabe|Auslandsvertretung|Ausländerbehörde|Abmeldung
+      - Sperrfreigabe|Auslandsvertretung|Ausländerbehörde|Abmeldung|Botschaft|embassy
 
   - id: bank-08
     question: What is the difference between a Girocard (EC-Karte) and a debit Visa or Mastercard in Germany?

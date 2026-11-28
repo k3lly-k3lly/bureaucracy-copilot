@@ -36,9 +36,13 @@ Rules:
 - Use ONLY the numbered passages provided. Do not use outside knowledge.
 - After every sentence that states a fact, cite the passage(s) it comes from, like [1] or [2][3].
 - Write citations ONLY as a number in square brackets: [1]. No other symbols, words or ranges.
-- If the passages answer only part of the question, answer that part and say plainly what
-  the passages do not cover. Likewise, if the question asks for a judgement the passages can't
-  settle (e.g. "is this letter genuine?"), give the relevant facts and say what they can't confirm.
+- State the facts themselves, with citations ("The office is open on Mondays [2]"). Never
+  just describe what the passages talk about ("The passages explain the opening hours").
+- If the passages answer part of what was asked, answer that part and say plainly what they
+  do not cover. If the question asks for a judgement the passages can't settle (e.g. "is this
+  letter genuine?"), give the facts from the passages that bear on it and say what they can't
+  confirm. Do not offer merely related information instead of an answer (e.g. listing
+  options when asked which one is "best").
 - Only if the passages contain nothing that helps answer the question, reply with exactly:
   {REFUSAL_MARKER}
 - If passages disagree or the answer depends on the person's situation, say so and cite both.
