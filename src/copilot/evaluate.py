@@ -426,6 +426,23 @@ def last_run_failures(runs_dir: Path = RUNS_DIR) -> set[str]:
     return {r["id"] for r in json.loads(runs[-1].read_text()) if r["passed"] is not True}
 
 
+def show_prompts(questions: list[Question], search: Search) -> None:
+    """Print the exact messages the model would receive: to debug a wrong refusal, check
+    whether the answer is really in the passages, or got lost (cut off, wrong passage)."""
+    from copilot.answer import build_messages
+
+    for q in questions:
+        results = search(q.question)
+        rank = retrieval_rank(q.expected_urls, [r.url for r in results])
+        print("=" * 100)
+        print(f"{q.id}  expected rank: {rank}  must include: {q.must_include}")
+        for i, r in enumerate(results, start=1):
+            print(f"  [{i}] similarity {r.similarity:.2f}  {r.url}  ({len(r.text)} chars)")
+        print("-" * 100)
+        print(build_messages(q.question, results)[1]["content"])
+        print()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="copilot.evaluate")
     parser.add_argument("--check", action="store_true", help="only validate the question file")
@@ -434,6 +451,11 @@ def main() -> None:
     parser.add_argument("--failed", action="store_true", help="only last run's failures")
     parser.add_argument("--model", help="Groq model to use instead of GROQ_MODEL")
     parser.add_argument("--ci", action="store_true", help=f"run the check in {CI_FILE}")
+    parser.add_argument(
+        "--show-prompt",
+        action="store_true",
+        help="print exactly what the model would get for --ids (no Groq call)",
+    )
     args = parser.parse_args()
 
     questions = load_questions()
@@ -465,7 +487,7 @@ def main() -> None:
     if args.ci:
         if settings.groq_api_key:
             llm = groq_llm(settings.groq_api_key, model_name)
-    elif not args.retrieval_only:
+    elif not (args.retrieval_only or args.show_prompt):
         if not settings.groq_api_key:
             raise SystemExit("GROQ_API_KEY is not set (or use --retrieval-only)")
         llm = groq_llm(settings.groq_api_key, model_name)
@@ -475,6 +497,9 @@ def main() -> None:
         def search(question: str) -> list[SearchResult]:
             return hybrid_search(conn, question, embed_texts([question])[0], limit=TOP_K)
 
+        if args.show_prompt:
+            show_prompts(questions, search)
+            return
         if args.ci:
             raise SystemExit(0 if run_ci(questions, search, llm, ci_config, model_name) else 1)
         results = run(questions, search, llm)

@@ -36,7 +36,11 @@ Rules:
 - Use ONLY the numbered passages provided. Do not use outside knowledge.
 - After every sentence that states a fact, cite the passage(s) it comes from, like [1] or [2][3].
 - Write citations ONLY as a number in square brackets: [1]. No other symbols, words or ranges.
-- If the passages do not contain the answer, reply with exactly: {REFUSAL_MARKER}
+- If the passages answer only part of the question, answer that part and say plainly what
+  the passages do not cover. Likewise, if the question asks for a judgement the passages can't
+  settle (e.g. "is this letter genuine?"), give the relevant facts and say what they can't confirm.
+- Only if the passages contain nothing that helps answer the question, reply with exactly:
+  {REFUSAL_MARKER}
 - If passages disagree or the answer depends on the person's situation, say so and cite both.
 - Answer in the language named at the end of the user message, even if the passages
   are in another language. Be short: 2 to 5 sentences.
