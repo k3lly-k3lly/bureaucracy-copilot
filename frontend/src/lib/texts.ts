@@ -46,6 +46,9 @@ export const TEXTS: Record<Language, Texts> = {
     sources: "Sources",
     refusedHint: "The copilot only answers when the official sources it has cover the question.",
     errors: {
+      rateLimited: "You've asked a lot of questions in a short time. Please wait a minute.",
+      dailyLimit:
+        "The copilot has used up today's free answers. Please come back tomorrow. Sorry!",
       busy: "Too many questions right now. Please wait a minute and try again.",
       unreachable:
         "Can't reach the server. It may be waking up, which takes about a minute. Please try again.",
@@ -83,6 +86,10 @@ export const TEXTS: Record<Language, Texts> = {
     refusedHint:
       "Der Copilot antwortet nur, wenn seine offiziellen Quellen die Frage abdecken.",
     errors: {
+      rateLimited: "Du hast in kurzer Zeit viele Fragen gestellt. Bitte warte eine Minute.",
+      dailyLimit:
+        "Der Copilot hat die kostenlosen Antworten für heute aufgebraucht. Bitte komm morgen " +
+        "wieder. Entschuldigung!",
       busy: "Gerade kommen zu viele Fragen an. Bitte warte eine Minute und versuche es erneut.",
       unreachable:
         "Der Server ist nicht erreichbar. Vielleicht startet er gerade, das dauert etwa eine " +

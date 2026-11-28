@@ -44,7 +44,7 @@ from pathlib import Path
 import httpx
 import yaml
 
-from copilot.answer import Answer, Llm, answer_question
+from copilot.answer import Answer, Llm, answer_question, is_daily_limit
 from copilot.language import detect_language
 from copilot.search import SearchResult
 
@@ -272,11 +272,6 @@ Search = Callable[[str], list[SearchResult]]
 
 class DailyLimitReached(Exception):
     """Groq's per-day token/request budget is used up: waiting a minute will not help."""
-
-
-def is_daily_limit(exc: httpx.HTTPStatusError) -> bool:
-    text = f"{exc} {exc.response.text}".lower()
-    return "per day" in text or "(tpd)" in text or "(rpd)" in text
 
 
 def call_with_patience(fn: Callable[[], Answer], retries: int = 3, sleep=time.sleep) -> Answer:

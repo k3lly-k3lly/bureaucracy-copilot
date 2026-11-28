@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     # Websites allowed to call the API from a browser (CORS): the local dev server and the
     # GitHub Pages site. Override with CORS_ORIGINS='["https://..."]' in .env if they change.
     cors_origins: list[str] = ["http://localhost:3000", "https://k3lly-k3lly.github.io"]
+    # Questions per visitor (IP address). Groq's free tier gives ~100 questions a day in
+    # total, so one visitor must not be able to use them all up.
+    ask_per_minute: int = 5
+    ask_per_day: int = 30
+    feedback_per_minute: int = 10
 
 
 @lru_cache

@@ -4,14 +4,15 @@ from collections.abc import Callable, Iterator
 from typing import Annotated, Literal
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from copilot import __version__
-from copilot.answer import Llm, answer_question, groq_llm
+from copilot.answer import Llm, answer_question, groq_llm, is_daily_limit
 from copilot.config import get_settings
 from copilot.db import check_database, connect, save_feedback
+from copilot.ratelimit import DAY, MINUTE, RateLimiter, retry_after_header
 from copilot.search import hybrid_search
 
 settings = get_settings()
@@ -27,6 +28,40 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+# --- Rate limits ------------------------------------------------------------------------------
+# One limiter per rule. They are module-level so every request shares the same counts;
+# tests reset them between tests (see tests/conftest.py).
+ask_per_minute = RateLimiter(settings.ask_per_minute, MINUTE)
+ask_per_day = RateLimiter(settings.ask_per_day, DAY)
+feedback_per_minute = RateLimiter(settings.feedback_per_minute, MINUTE)
+
+
+def visitor(request: Request) -> str:
+    """Who is asking: their IP address. Behind Render's proxy, uvicorn reads the real one
+    from the X-Forwarded-For header (see --proxy-headers in the Dockerfile)."""
+    return request.client.host if request.client else "unknown"
+
+
+def enforce(limiters: list[RateLimiter], key: str) -> None:
+    """Raise 429 Too Many Requests if any limit is reached, with a Retry-After header."""
+    for limiter in limiters:
+        wait = limiter.hit(key)
+        if wait:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many questions, please slow down",
+                headers=retry_after_header(wait),
+            )
+
+
+def limit_ask(request: Request) -> None:
+    enforce([ask_per_minute, ask_per_day], visitor(request))
+
+
+def limit_feedback(request: Request) -> None:
+    enforce([feedback_per_minute], visitor(request))
+
 
 Topic = Literal["anmeldung", "residence_permit", "health_insurance", "renting", "banking"]
 
@@ -94,7 +129,9 @@ class AskResponse(BaseModel):
     reason: str = ""
 
 
-@app.post("/ask", response_model=AskResponse)
+# The rate limit runs first (dependencies listed in the decorator run before the others), so a
+# visitor over the limit costs no database query, no embedding and no Groq tokens.
+@app.post("/ask", response_model=AskResponse, dependencies=[Depends(limit_ask)])
 def ask(
     request: AskRequest,
     conn: Annotated[object, Depends(get_db)],
@@ -107,6 +144,10 @@ def ask(
     try:
         result = answer_question(request.question, results, llm)
     except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 429 and is_daily_limit(exc):
+            # Today's free Groq budget is used up for everyone: waiting a minute won't help.
+            used_up = {"code": "daily_limit", "message": "Today's free answers are used up"}
+            raise HTTPException(status_code=503, detail=used_up) from exc
         if exc.response.status_code == 429:
             busy = "Answer service is busy, try again"
             raise HTTPException(status_code=503, detail=busy) from exc
@@ -138,7 +179,12 @@ class FeedbackResponse(BaseModel):
     id: int
 
 
-@app.post("/feedback", response_model=FeedbackResponse, status_code=201)
+@app.post(
+    "/feedback",
+    response_model=FeedbackResponse,
+    status_code=201,
+    dependencies=[Depends(limit_feedback)],
+)
 def feedback(
     request: FeedbackRequest,
     conn: Annotated[object, Depends(get_db)],

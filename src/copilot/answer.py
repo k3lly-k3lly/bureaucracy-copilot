@@ -187,3 +187,9 @@ def groq_llm(api_key: str, model: str, client: httpx.Client | None = None) -> Ll
         return response.json()["choices"][0]["message"]["content"] or ""
 
     return call
+
+
+def is_daily_limit(exc: httpx.HTTPStatusError) -> bool:
+    """True if Groq refused because today's free budget is used up (not just this minute's)."""
+    text = f"{exc} {exc.response.text}".lower()
+    return "per day" in text or "(tpd)" in text or "(rpd)" in text

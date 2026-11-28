@@ -16,7 +16,13 @@ export type AskResponse = {
 };
 
 // Why a question failed, so the page can show a helpful message in the right language.
-export type AskErrorKind = "busy" | "unreachable" | "invalid" | "failed";
+export type AskErrorKind =
+  | "rateLimited" // this visitor asked too many questions in a short time
+  | "dailyLimit" // today's free answers are used up for everyone
+  | "busy"
+  | "unreachable"
+  | "invalid"
+  | "failed";
 
 export class AskError extends Error {
   constructor(public kind: AskErrorKind) {
@@ -38,7 +44,12 @@ export async function ask(question: string): Promise<AskResponse> {
     // No response at all: the API is not running, or (once deployed) still waking up.
     throw new AskError("unreachable");
   }
-  if (response.status === 503) throw new AskError("busy"); // e.g. Groq rate limit
+  if (response.status === 429) throw new AskError("rateLimited");
+  if (response.status === 503) {
+    // 503 has two causes: Groq is busy this minute, or today's free budget is used up.
+    const body = await response.json().catch(() => null);
+    throw new AskError(body?.detail?.code === "daily_limit" ? "dailyLimit" : "busy");
+  }
   if (response.status === 422) throw new AskError("invalid"); // too short / too long
   if (!response.ok) throw new AskError("failed");
   return (await response.json()) as AskResponse;

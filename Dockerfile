@@ -18,5 +18,9 @@ RUN uv sync --frozen --no-dev
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 
-# Render sets $PORT; locally it defaults to 8000
-CMD ["sh", "-c", "uvicorn copilot.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Render sets $PORT; locally it defaults to 8000.
+# --proxy-headers: on Render every request arrives through Render's proxy, so the visitor's
+# real IP is in the X-Forwarded-For header. The rate limiter needs that IP, not the proxy's.
+# Trusting the header from any address (*) is safe only because the container can't be
+# reached except through Render's proxy.
+CMD ["sh", "-c", "uvicorn copilot.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
