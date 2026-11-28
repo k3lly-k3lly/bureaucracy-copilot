@@ -17,6 +17,14 @@ type Texts = {
   refusedHint: string;
   errors: Record<AskErrorKind, string>;
   disclaimer: string;
+  feedback: {
+    question: string;
+    yes: string;
+    no: string;
+    privacy: string; // shown next to the buttons: says exactly what a click sends
+    thanks: string;
+    failed: string;
+  };
 };
 
 export const TEXTS: Record<Language, Texts> = {
@@ -47,6 +55,14 @@ export const TEXTS: Record<Language, Texts> = {
     disclaimer:
       "Not legal advice. Answers can be incomplete or out of date: always check the linked " +
       "official source before you act.",
+    feedback: {
+      question: "Was this helpful?",
+      yes: "Yes",
+      no: "No",
+      privacy: "Clicking sends your question and this answer, nothing else.",
+      thanks: "Thanks for your feedback!",
+      failed: "Couldn't send your feedback. Please try again later.",
+    },
   },
   de: {
     title: "Bureaucracy Copilot",
@@ -77,5 +93,13 @@ export const TEXTS: Record<Language, Texts> = {
     disclaimer:
       "Keine Rechtsberatung. Antworten können unvollständig oder veraltet sein: Prüfe immer " +
       "die verlinkte offizielle Quelle, bevor du handelst.",
+    feedback: {
+      question: "War das hilfreich?",
+      yes: "Ja",
+      no: "Nein",
+      privacy: "Ein Klick sendet deine Frage und diese Antwort, sonst nichts.",
+      thanks: "Danke für dein Feedback!",
+      failed: "Feedback konnte nicht gesendet werden. Bitte versuche es später erneut.",
+    },
   },
 };

@@ -43,3 +43,27 @@ export async function ask(question: string): Promise<AskResponse> {
   if (!response.ok) throw new AskError("failed");
   return (await response.json()) as AskResponse;
 }
+
+// One "was this helpful?" vote. Mirrors FeedbackRequest in src/copilot/main.py.
+export type Feedback = {
+  helpful: boolean;
+  question: string;
+  answer: string;
+  refused: boolean;
+  cited_urls: string[];
+};
+
+// Returns true if the vote was stored. A failed vote isn't worth an error screen: the caller
+// just shows a short "couldn't send" note.
+export async function sendFeedback(feedback: Feedback): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_URL}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(feedback),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}

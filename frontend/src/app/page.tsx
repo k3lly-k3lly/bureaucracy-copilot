@@ -5,6 +5,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import AnswerView from "@/components/AnswerView";
+import FeedbackButtons from "@/components/FeedbackButtons";
 import { ask, AskError, type AskErrorKind, type AskResponse } from "@/lib/api";
 import { TEXTS, type Language } from "@/lib/texts";
 
@@ -105,11 +106,18 @@ export default function Home() {
                   </p>
                 )}
                 {turn.status === "done" && (
-                  <AnswerView
-                    response={turn.response}
-                    sourcesLabel={t.sources}
-                    refusedHint={t.refusedHint}
-                  />
+                  <>
+                    <AnswerView
+                      response={turn.response}
+                      sourcesLabel={t.sources}
+                      refusedHint={t.refusedHint}
+                    />
+                    <FeedbackButtons
+                      question={turn.question}
+                      response={turn.response}
+                      texts={t.feedback}
+                    />
+                  </>
                 )}
               </li>
             ))}

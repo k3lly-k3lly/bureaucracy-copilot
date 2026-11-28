@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from copilot import __version__
 from copilot.answer import Llm, answer_question, groq_llm
 from copilot.config import get_settings
-from copilot.db import check_database, connect
+from copilot.db import check_database, connect, save_feedback
 from copilot.search import hybrid_search
 
 settings = get_settings()
@@ -119,3 +119,29 @@ def ask(
         citations=[CitationOut(**vars(c)) for c in result.citations],
         reason=result.reason,
     )
+
+
+# --- /feedback ---------------------------------------------------------------------------------
+
+
+class FeedbackRequest(BaseModel):
+    """What the chat page sends when someone clicks "Yes" or "No" under an answer."""
+
+    helpful: bool
+    question: str = Field(min_length=3, max_length=500)  # same limits as /ask
+    answer: str = Field(max_length=4000)
+    refused: bool
+    cited_urls: list[str] = Field(default_factory=list, max_length=10)
+
+
+class FeedbackResponse(BaseModel):
+    id: int
+
+
+@app.post("/feedback", response_model=FeedbackResponse, status_code=201)
+def feedback(
+    request: FeedbackRequest,
+    conn: Annotated[object, Depends(get_db)],
+) -> FeedbackResponse:
+    """Store a "was this helpful?" vote, so bad answers can be found and fixed later."""
+    return FeedbackResponse(id=save_feedback(conn, **request.model_dump()))

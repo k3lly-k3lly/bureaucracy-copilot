@@ -1,4 +1,4 @@
-"""Database helpers: connection, schema, and writing chunks with their embeddings."""
+"""Database helpers: connection, schema, writing chunks with their embeddings, and feedback."""
 
 import psycopg
 from pgvector.psycopg import register_vector
@@ -40,6 +40,21 @@ ALTER TABLE chunks ADD COLUMN IF NOT EXISTS search_tsv tsvector GENERATED ALWAYS
 ) STORED;
 
 CREATE INDEX IF NOT EXISTS chunks_search_tsv_idx ON chunks USING gin (search_tsv);
+"""
+
+# "Was this helpful?" clicks from the chat page. Only what the visitor sees on screen is kept:
+# no IP address, no browser details, no account. The question can still contain personal
+# details someone typed in, so the page tells visitors what is sent before they click.
+FEEDBACK_SCHEMA = """
+CREATE TABLE IF NOT EXISTS feedback (
+    id          BIGSERIAL PRIMARY KEY,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    helpful     BOOLEAN NOT NULL,
+    question    TEXT NOT NULL,
+    answer      TEXT NOT NULL,
+    refused     BOOLEAN NOT NULL,
+    cited_urls  TEXT[] NOT NULL DEFAULT '{}'
+);
 """
 
 UPSERT = """
@@ -116,6 +131,42 @@ def delete_chunks_not_in(conn: psycopg.Connection, keep_ids: list[str]) -> int:
 
 def count_chunks(conn: psycopg.Connection) -> int:
     return conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
+
+
+def save_feedback(
+    conn: psycopg.Connection,
+    *,
+    helpful: bool,
+    question: str,
+    answer: str,
+    refused: bool,
+    cited_urls: list[str],
+) -> int:
+    """Store one "was this helpful?" click and return its id.
+
+    Creates the table on first use, so the API works without running `ingest load` first.
+    """
+    conn.execute(FEEDBACK_SCHEMA)
+    row = conn.execute(
+        "INSERT INTO feedback (helpful, question, answer, refused, cited_urls) "
+        "VALUES (%s, %s, %s, %s, %s) RETURNING id",
+        (helpful, question, answer, refused, cited_urls),
+    ).fetchone()
+    conn.commit()
+    return row[0]
+
+
+def recent_feedback(conn: psycopg.Connection, limit: int = 20, helpful: bool | None = None):
+    """Newest feedback first; pass helpful=False to see only the answers people disliked."""
+    conn.execute(FEEDBACK_SCHEMA)
+    query = "SELECT id, created_at, helpful, question, answer, refused, cited_urls FROM feedback"
+    params: list = []
+    if helpful is not None:
+        query += " WHERE helpful = %s"
+        params.append(helpful)
+    query += " ORDER BY id DESC LIMIT %s"
+    params.append(limit)
+    return conn.execute(query, params).fetchall()
 
 
 def check_database(database_url: str) -> dict:
