@@ -36,7 +36,8 @@ def main() -> None:
     for id_, created_at, helpful, question, answer, refused, cited_urls in rows:
         vote = "yes" if helpful else "NO "
         status = " (refused)" if refused else ""
-        print(f"#{id_}  {created_at:%Y-%m-%d %H:%M}  helpful: {vote}{status}")
+        # The database keeps times in UTC; show them in this computer's time zone.
+        print(f"#{id_}  {created_at.astimezone():%Y-%m-%d %H:%M}  helpful: {vote}{status}")
         print(f"  Q: {shorten(question)}")
         print(f"  A: {shorten(answer)}")
         for url in cited_urls:
